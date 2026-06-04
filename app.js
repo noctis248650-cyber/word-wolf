@@ -326,6 +326,7 @@ function renderPlayers() {
 
 function renderSecret() {
   secretCard.classList.toggle("hidden", ["lobby", "discussion"].includes(state.room.phase));
+  secretCard.classList.remove("is-wolf-win");
 
   const game = state.room.currentGame;
   if (!game) {
@@ -337,7 +338,13 @@ function renderSecret() {
   if (state.room.phase === "result") {
     const result = game.result || {};
     const role = game.viewerRole === "wolf" ? "워드울프" : "시민";
-    secretWord.textContent = result.winners === "villagers" ? "시민 승리" : "울프 승리";
+    const wolfNames = (result.wolves || [])
+      .map((id) => state.room.players.find((player) => player.id === id)?.name)
+      .filter(Boolean)
+      .join(", ");
+    const isWolfWin = result.winners === "wolves";
+    secretCard.classList.toggle("is-wolf-win", isWolfWin);
+    secretWord.textContent = isWolfWin ? wolfNames || "울프" : "시민 승리";
     categoryText.textContent = `내 역할: ${role} · 시민 단어: ${result.words?.villager || "-"} · 울프 단어: ${
       result.words?.wolf || "-"
     }`;
