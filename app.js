@@ -81,7 +81,9 @@ let state = {
   rooms: [],
   profileReady: false,
   selectedAvatar: normalizeAvatarId(localStorage.getItem("wordWolfAvatar")),
-  roomBadgeResetHandle: null
+  roomBadgeResetHandle: null,
+  aiTurnInProgressKey: "",
+  aiTurnFailures: new Set()
 };
 
 playerNameInput.value = localStorage.getItem("wordWolfPlayerName") || "";
@@ -177,6 +179,83 @@ async function runAiBotTurn(action, botPlayerId) {
 
   state.room = data.room;
   return data;
+}
+
+function getAiTurn() {
+  if (!isHost() || !state.room?.currentGame || state.busy) return null;
+
+  const game = state.room.currentGame;
+  if (state.room.phase === "hint") {
+    const active = playerById(game.activePlayerId);
+    const hasHint = (game.hints || []).some((hint) => hint.playerId === active?.id);
+    if (active?.isBot && !hasHint) {
+      return {
+        action: "hint",
+        botId: active.id,
+        key: `${state.room.code}:${state.room.round}:hint:${active.id}:${(game.hints || []).length}`,
+        message: `${active.name}이 힌트를 생각하는 중이에요.`
+      };
+    }
+  }
+
+  if (state.room.phase === "vote") {
+    const bot = state.room.players.find((player) => player.isBot && !player.votedFor && !game.votes?.[player.id]);
+    if (bot) {
+      return {
+        action: "vote",
+        botId: bot.id,
+        key: `${state.room.code}:${state.room.round}:vote:${bot.id}:${Object.keys(game.votes || {}).length}`,
+        message: `${bot.name}이 투표 대상을 고르는 중이에요.`
+      };
+    }
+  }
+
+  if (state.room.phase === "wolf_guess") {
+    const active = playerById(game.activePlayerId);
+    if (active?.isBot) {
+      return {
+        action: "guess",
+        botId: active.id,
+        key: `${state.room.code}:${state.room.round}:guess:${active.id}`,
+        message: `${active.name}이 시민 단어를 추리하는 중이에요.`
+      };
+    }
+  }
+
+  return null;
+}
+
+function scheduleAiTurn() {
+  const turn = getAiTurn();
+  if (!turn || state.aiTurnInProgressKey === turn.key || state.aiTurnFailures.has(turn.key)) return;
+
+  state.aiTurnInProgressKey = turn.key;
+  window.setTimeout(() => {
+    if (state.aiTurnInProgressKey !== turn.key) return;
+    if (state.busy) {
+      state.aiTurnInProgressKey = "";
+      return;
+    }
+
+    state.busy = true;
+    setButtonsDisabled(true);
+    setMessage(turn.message);
+
+    runAiBotTurn(turn.action, turn.botId)
+      .then(() => {
+        render();
+      })
+      .catch((error) => {
+        state.aiTurnFailures.add(turn.key);
+        setMessage(error.message, true);
+      })
+      .finally(() => {
+        state.aiTurnInProgressKey = "";
+        state.busy = false;
+        setButtonsDisabled(false);
+        window.setTimeout(scheduleAiTurn, 80);
+      });
+  }, 350);
 }
 
 function requireName() {
@@ -890,6 +969,7 @@ function render() {
   renderTimer();
   renderActions();
   renderChat();
+  scheduleAiTurn();
 }
 
 enterLobbyBtn.addEventListener("click", () =>
