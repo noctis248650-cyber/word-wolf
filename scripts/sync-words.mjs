@@ -1,12 +1,23 @@
 import { readFile } from "node:fs/promises";
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+function cleanSecret(value, name) {
+  const trimmed = String(value || "").trim().replace(/^["']|["']$/g, "");
+  return trimmed.startsWith(`${name}=`) ? trimmed.slice(name.length + 1).trim() : trimmed;
+}
+
+const supabaseUrl = cleanSecret(process.env.SUPABASE_URL, "SUPABASE_URL");
+const serviceRoleKey = cleanSecret(process.env.SUPABASE_SERVICE_ROLE_KEY, "SUPABASE_SERVICE_ROLE_KEY");
 const csvPath = process.env.WORDS_CSV_PATH || "supabase/word_pairs.csv";
 
 if (!supabaseUrl || !serviceRoleKey) {
   throw new Error(
     "GitHub Secrets are missing. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Settings > Secrets and variables > Actions."
+  );
+}
+
+if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(supabaseUrl)) {
+  throw new Error(
+    "SUPABASE_URL must look like https://your-project-ref.supabase.co. Put only the URL value in the GitHub Secret, not SUPABASE_URL=..."
   );
 }
 
