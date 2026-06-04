@@ -384,6 +384,7 @@ function renderHintPanel() {
   const hintButton = hintForm.querySelector("button");
   hintButton.disabled = !canSubmit;
   hintButton.dataset.keepDisabled = canSubmit ? "false" : "true";
+  hintForm.classList.toggle("hidden", state.room.phase !== "hint");
   hintInput.placeholder = canSubmit ? "15초 안에 짧은 힌트 제출" : "내 차례가 되면 입력할 수 있어요";
 }
 

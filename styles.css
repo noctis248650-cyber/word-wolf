@@ -356,17 +356,20 @@ input:focus {
 
 .timer {
   min-width: 86px;
-  border: 1px solid rgba(120, 168, 255, 0.3);
+  border: 1px solid rgba(244, 195, 95, 0.86);
   border-radius: 8px;
   background:
-    linear-gradient(180deg, rgba(120, 168, 255, 0.18), rgba(0, 0, 0, 0.2)),
-    #111827;
-  color: #dce8ff;
+    linear-gradient(180deg, rgba(244, 195, 95, 0.38), rgba(255, 104, 104, 0.2)),
+    #15100a;
+  color: #fff2c7;
   padding: 10px;
   text-align: center;
   font-size: 20px;
   font-weight: 950;
-  box-shadow: 0 0 22px rgba(120, 168, 255, 0.14);
+  text-shadow: 0 0 12px rgba(244, 195, 95, 0.8);
+  box-shadow:
+    0 0 26px rgba(244, 195, 95, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
 }
 
 .secret-card {
