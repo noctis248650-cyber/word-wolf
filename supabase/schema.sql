@@ -311,6 +311,10 @@ begin
   end if;
 
   select * into pair from ww_word_pairs order by random() limit 1;
+  if pair.id is null then
+    raise exception '단어 DB가 비어 있어요. Sync Word DB 액션을 먼저 실행해주세요.';
+  end if;
+
   wolf_count := least(coalesce((room.settings->>'wolfCount')::integer, 1), greatest(1, player_count - 2));
 
   select array_agg(player_id)

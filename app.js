@@ -248,6 +248,7 @@ function renderLobbyActions() {
     );
     addButton("게임 시작", "primary", () =>
       runAction(async () => {
+        setMessage("게임을 시작하는 중이에요.");
         state.room = await rpc("ww_start_round", {
           p_code: state.room.code,
           p_player_id: state.playerId
