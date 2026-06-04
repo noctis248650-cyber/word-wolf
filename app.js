@@ -23,12 +23,26 @@ const hasSupabaseConfig =
 
 const db = hasSupabaseConfig ? window.supabase.createClient(config.url, config.anonKey) : null;
 
+const localWordPairs = [
+  { villager: "커피", wolf: "홍차", category: "음료" },
+  { villager: "도서관", wolf: "서점", category: "장소" },
+  { villager: "비행기", wolf: "기차", category: "교통" },
+  { villager: "피자", wolf: "햄버거", category: "음식" },
+  { villager: "수영장", wolf: "목욕탕", category: "장소" },
+  { villager: "고양이", wolf: "강아지", category: "동물" },
+  { villager: "영화관", wolf: "공연장", category: "문화" },
+  { villager: "초콜릿", wolf: "사탕", category: "간식" },
+  { villager: "바다", wolf: "호수", category: "자연" },
+  { villager: "축구", wolf: "농구", category: "운동" }
+];
+
 let state = {
   room: null,
   playerId: localStorage.getItem("wordWolfPlayerId") || "",
   pollHandle: null,
   timerHandle: null,
-  busy: false
+  busy: false,
+  localMode: false
 };
 
 function currentPlayer() {
@@ -127,6 +141,113 @@ function phaseLabel(phase) {
     discussion: "토론 및 투표",
     result: "결과 공개"
   }[phase] || "대기 중";
+}
+
+function shuffled(items) {
+  return [...items].sort(() => Math.random() - 0.5);
+}
+
+function localStartRound() {
+  const pair = localWordPairs[Math.floor(Math.random() * localWordPairs.length)];
+  const playerIds = state.room.players.map((player) => player.id);
+  const wolfId = shuffled(playerIds)[0];
+  const assignments = {};
+  const now = Date.now();
+
+  for (const id of playerIds) {
+    const isWolf = id === wolfId;
+    assignments[id] = {
+      role: isWolf ? "wolf" : "villager",
+      word: isWolf ? pair.wolf : pair.villager
+    };
+  }
+
+  state.localMode = true;
+  stopPolling();
+  state.room = {
+    ...state.room,
+    phase: "discussion",
+    round: state.room.round + 1,
+    currentGame: {
+      category: pair.category,
+      startedAt: now,
+      discussionEndsAt: now + state.room.settings.discussionSeconds * 1000,
+      votes: {},
+      result: null,
+      viewerWord: assignments[state.playerId]?.word || null,
+      viewerRole: assignments[state.playerId]?.role || null,
+      localPair: pair,
+      localWolfIds: [wolfId],
+      localAssignments: assignments
+    }
+  };
+}
+
+function localVote(playerId, targetId) {
+  if (!state.room?.currentGame) return;
+  state.room.currentGame.votes = {
+    ...state.room.currentGame.votes,
+    [playerId]: targetId
+  };
+  state.room.players = state.room.players.map((player) => ({
+    ...player,
+    votedFor: Boolean(state.room.currentGame.votes[player.id])
+  }));
+  if (Object.keys(state.room.currentGame.votes).length >= state.room.players.length) {
+    localFinishRound();
+  }
+}
+
+function localBotVote() {
+  const bots = state.room.players.filter((player) => player.isBot && !state.room.currentGame.votes[player.id]);
+  for (const bot of bots) {
+    const targets = state.room.players.filter((player) => player.id !== bot.id);
+    const target = targets[Math.floor(Math.random() * targets.length)];
+    if (target) localVote(bot.id, target.id);
+  }
+}
+
+function localFinishRound() {
+  const game = state.room.currentGame;
+  const counts = new Map();
+
+  for (const targetId of Object.values(game.votes)) {
+    counts.set(targetId, (counts.get(targetId) || 0) + 1);
+  }
+
+  const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  const topScore = sorted[0]?.[1] || 0;
+  const topTargets = sorted.filter(([, score]) => score === topScore).map(([id]) => id);
+  const eliminatedId = topTargets.length === 1 ? topTargets[0] : null;
+  const villagersWin = eliminatedId ? game.localWolfIds.includes(eliminatedId) : false;
+
+  state.room = {
+    ...state.room,
+    phase: "result",
+    currentGame: {
+      ...game,
+      result: {
+        eliminatedId,
+        tie: !eliminatedId,
+        winners: villagersWin ? "villagers" : "wolves",
+        words: {
+          villager: game.localPair.villager,
+          wolf: game.localPair.wolf
+        },
+        wolves: game.localWolfIds
+      }
+    }
+  };
+}
+
+function localResetRoom() {
+  state.localMode = false;
+  state.room = {
+    ...state.room,
+    phase: "lobby",
+    currentGame: null,
+    players: state.room.players.map((player) => ({ ...player, votedFor: false }))
+  };
 }
 
 function formatTimer(ms) {
@@ -249,6 +370,11 @@ function renderLobbyActions() {
     addButton("게임 시작", "primary", () =>
       runAction(async () => {
         setMessage("게임을 시작하는 중이에요.");
+        if (state.room.players.some((player) => player.isBot)) {
+          localStartRound();
+          render();
+          return;
+        }
         state.room = await rpc("ww_start_round", {
           p_code: state.room.code,
           p_player_id: state.playerId
@@ -275,6 +401,11 @@ function renderDiscussionActions() {
     button.textContent = `${player.name}에게 투표`;
     button.addEventListener("click", () =>
       runAction(async () => {
+        if (state.localMode) {
+          localVote(state.playerId, player.id);
+          render();
+          return;
+        }
         state.room = await rpc("ww_vote", {
           p_code: state.room.code,
           p_player_id: state.playerId,
@@ -290,6 +421,11 @@ function renderDiscussionActions() {
     if (state.room.players.some((player) => player.isBot)) {
       addButton("AI 투표", "", () =>
         runAction(async () => {
+          if (state.localMode) {
+            localBotVote();
+            render();
+            return;
+          }
           state.room = await rpc("ww_bot_vote", {
             p_code: state.room.code,
             p_player_id: state.playerId
@@ -300,6 +436,11 @@ function renderDiscussionActions() {
     }
     addButton("즉시 결과 공개", "danger", () =>
       runAction(async () => {
+        if (state.localMode) {
+          localFinishRound();
+          render();
+          return;
+        }
         state.room = await rpc("ww_finish_room", {
           p_code: state.room.code,
           p_player_id: state.playerId
@@ -331,6 +472,11 @@ function renderResultActions() {
   if (isHost()) {
     addButton("다음 판 준비", "primary", () =>
       runAction(async () => {
+        if (state.localMode) {
+          localResetRoom();
+          render();
+          return;
+        }
         state.room = await rpc("ww_reset_room", {
           p_code: state.room.code,
           p_player_id: state.playerId
