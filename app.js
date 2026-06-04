@@ -992,8 +992,15 @@ function renderResultActions() {
       wolf_guessed_word: "울프가 시민 단어를 맞혔어요.",
       wolf_missed_word: "울프를 잡고 최종 추리도 막았어요."
     }[result.reason] || "게임이 종료됐어요.";
+  const voteLines = (result.voteSummary || [])
+    .map((item) => {
+      const voters = Array.isArray(item.voters) && item.voters.length ? ` (${item.voters.join(", ")})` : "";
+      return `${item.playerName}: ${item.count || 0}표${voters}`;
+    })
+    .join("\n");
+  const voteText = voteLines ? `\n\n투표 결과\n${voteLines}` : "";
 
-  setMessage(`${winnerText}\n${reasonText}\n지목된 사람: ${eliminatedName}\n워드울프: ${wolfNames || "없음"}`);
+  setMessage(`${winnerText}\n${reasonText}\n지목된 사람: ${eliminatedName}\n워드울프: ${wolfNames || "없음"}${voteText}`);
 
   if (isHost()) {
     addButton("다음 판 준비", "primary", () =>

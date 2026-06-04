@@ -92,7 +92,7 @@ Because the app uses relative paths, it can run from a subpath like:
 - Supabase randomly picks a word pair from the word DB
 - Each player privately sees their assigned word
 - Timed phase flow:
-  - Word reveal: 15 seconds
+  - Word reveal: 10 seconds
   - Hint round: 30 seconds per player
   - Free discussion: 180 seconds
   - Vote: 30 seconds

@@ -915,7 +915,7 @@ input:focus {
   color: var(--muted);
   line-height: 1.25;
   font-size: 11px;
-  white-space: normal;
+  white-space: pre-line;
   overflow-wrap: anywhere;
 }
 
