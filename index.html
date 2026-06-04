@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>워드울프 MVP</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="mast">
+        <div>
+          <p class="eyebrow">Room-based party game</p>
+          <h1>워드울프</h1>
+        </div>
+        <div class="room-badge" id="roomBadge">대기 중</div>
+      </section>
+
+      <section class="join-panel" id="entryPanel">
+        <div class="field">
+          <label for="playerName">아이디</label>
+          <input id="playerName" maxlength="16" placeholder="예: Hyuk" autocomplete="nickname" />
+        </div>
+        <div class="join-grid">
+          <button id="createRoomBtn" class="primary">방 만들기</button>
+          <div class="join-code">
+            <input id="roomCode" maxlength="5" placeholder="방 코드" />
+            <button id="joinRoomBtn">입장</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="game-layout hidden" id="gamePanel">
+        <aside class="side-panel">
+          <div class="panel-head">
+            <span>플레이어</span>
+            <strong id="playerCount">0명</strong>
+          </div>
+          <div id="players" class="players"></div>
+        </aside>
+
+        <section class="play-panel">
+          <div class="status-row">
+            <div>
+              <p class="label">진행 상태</p>
+              <h2 id="phaseTitle">대기실</h2>
+            </div>
+            <div class="timer" id="timer">--:--</div>
+          </div>
+
+          <div class="secret-card" id="secretCard">
+            <p class="label">내 단어</p>
+            <strong id="secretWord">게임 시작 전</strong>
+            <span id="categoryText">방장이 시작하면 각자 다른 화면에 비밀 단어가 표시돼요.</span>
+          </div>
+
+          <div class="action-bar" id="actionBar"></div>
+          <div class="message" id="message"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
