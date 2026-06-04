@@ -2,6 +2,7 @@ const entryPanel = document.querySelector("#entryPanel");
 const gamePanel = document.querySelector("#gamePanel");
 const playerNameInput = document.querySelector("#playerName");
 const roomCodeInput = document.querySelector("#roomCode");
+const avatarChoices = document.querySelector("#avatarChoices");
 const createRoomBtn = document.querySelector("#createRoomBtn");
 const joinRoomBtn = document.querySelector("#joinRoomBtn");
 const roomBadge = document.querySelector("#roomBadge");
@@ -25,6 +26,15 @@ const chatCount = document.querySelector("#chatCount");
 const chatLog = document.querySelector("#chatLog");
 const chatForm = document.querySelector("#chatForm");
 const chatInput = document.querySelector("#chatInput");
+
+const avatars = [
+  { id: "spark", icon: "✦", label: "스파크" },
+  { id: "moon", icon: "☾", label: "문" },
+  { id: "mask", icon: "◈", label: "마스크" },
+  { id: "flame", icon: "◆", label: "플레임" },
+  { id: "crystal", icon: "✧", label: "크리스탈" },
+  { id: "bot", icon: "AI", label: "AI" }
+];
 
 const config = window.WORD_WOLF_SUPABASE || {};
 const hasSupabaseConfig =
@@ -69,7 +79,8 @@ let state = {
   chatPollHandle: null,
   timerHandle: null,
   busy: false,
-  messages: []
+  messages: [],
+  selectedAvatar: localStorage.getItem("wordWolfAvatar") || "spark"
 };
 
 function currentPlayer() {
@@ -82,6 +93,14 @@ function playerById(id) {
 
 function playerName(id) {
   return playerById(id)?.name || "알 수 없음";
+}
+
+function avatarById(id) {
+  return avatars.find((avatar) => avatar.id === id) || avatars[0];
+}
+
+function avatarForPlayer(player) {
+  return avatarById(player?.avatar || (player?.isBot ? "bot" : "spark"));
 }
 
 function isHost() {
@@ -147,6 +166,24 @@ function clearSession() {
   mastTimerEl.classList.add("hidden");
   actionBar.innerHTML = "";
   playerNameInput.focus();
+}
+
+function renderAvatarChoices() {
+  avatarChoices.innerHTML = "";
+  for (const avatar of avatars.filter((item) => item.id !== "bot")) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "avatar-choice";
+    button.classList.toggle("selected", avatar.id === state.selectedAvatar);
+    button.setAttribute("aria-label", avatar.label);
+    button.textContent = avatar.icon;
+    button.addEventListener("click", () => {
+      state.selectedAvatar = avatar.id;
+      localStorage.setItem("wordWolfAvatar", avatar.id);
+      renderAvatarChoices();
+    });
+    avatarChoices.append(button);
+  }
 }
 
 function startPolling() {
@@ -270,6 +307,12 @@ function renderPlayers() {
 
     const meta = document.createElement("div");
     meta.className = "player-meta";
+
+    const avatar = document.createElement("span");
+    const avatarInfo = avatarForPlayer(player);
+    avatar.className = `player-avatar avatar-${avatarInfo.id}`;
+    avatar.textContent = avatarInfo.icon;
+    meta.append(avatar);
 
     const name = document.createElement("span");
     name.className = "player-name";
@@ -429,7 +472,8 @@ function renderChat() {
 
     const name = document.createElement("div");
     name.className = "chat-name";
-    name.textContent = msg.playerName || "알 수 없음";
+    const msgPlayer = playerById(msg.playerId);
+    name.textContent = `${avatarForPlayer(msgPlayer).icon} ${msg.playerName || "알 수 없음"}`;
 
     const body = document.createElement("div");
     body.className = "chat-text";
@@ -483,7 +527,7 @@ function renderLobbyActions() {
     startButton.disabled = !allReady;
     startButton.dataset.keepDisabled = allReady ? "false" : "true";
     const readyText = waitingPlayers.length ? `준비 ${readyCount}/${waitingPlayers.length}` : "AI 테스트 모드";
-    setMessage(allReady ? `${readyText}. 게임을 시작할 수 있어요.` : `${readyText}. 방장 제외 모두 준비 완료해야 시작할 수 있어요.`);
+    setMessage("자유롭게 대화해주세요.");
   } else {
     const ready = Boolean(currentPlayer()?.ready);
     addButton(ready ? "준비 취소" : "준비 완료", ready ? "" : "primary", () =>
@@ -495,7 +539,7 @@ function renderLobbyActions() {
         render();
       })
     );
-    setMessage(ready ? "준비 완료 상태예요. 시작 전까지 취소할 수 있어요." : "준비가 되면 준비 완료를 눌러주세요.");
+    setMessage("자유롭게 대화해주세요.");
   }
 }
 
@@ -653,6 +697,7 @@ function renderResultActions() {
           p_code: state.room.code,
           p_player_id: state.playerId
         });
+        state.messages = [];
         render();
       })
     );
@@ -692,7 +737,7 @@ function render() {
 
 createRoomBtn.addEventListener("click", () =>
   runAction(async () => {
-    const data = await rpc("ww_create_room", { p_name: requireName() });
+    const data = await rpc("ww_create_room", { p_name: requireName(), p_avatar: state.selectedAvatar });
     saveSession(data.room, data.playerId);
     startPolling();
     render();
@@ -705,7 +750,8 @@ joinRoomBtn.addEventListener("click", () =>
     if (!code) throw new Error("방 코드를 입력해주세요.");
     const data = await rpc("ww_join_room", {
       p_code: code,
-      p_name: requireName()
+      p_name: requireName(),
+      p_avatar: state.selectedAvatar
     });
     saveSession(data.room, data.playerId);
     startPolling();
@@ -787,5 +833,6 @@ async function restoreSession() {
 if (!hasSupabaseConfig) {
   setMessage("Supabase 설정이 필요해요. supabase-config.js에 Project URL과 anon public key를 넣어주세요.", true);
 } else {
-  restoreSession();
+restoreSession();
+renderAvatarChoices();
 }

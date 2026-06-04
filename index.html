@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>워드울프</title>
-    <link rel="stylesheet" href="styles.css?v=20260604-wolf-winner" />
+    <link rel="stylesheet" href="styles.css?v=20260604-avatar-chat-reset" />
   </head>
   <body>
     <main class="shell">
@@ -24,6 +24,10 @@
         <div class="field">
           <label for="playerName">아이디</label>
           <input id="playerName" maxlength="16" placeholder="예: Hyuk" autocomplete="nickname" />
+        </div>
+        <div class="field avatar-field">
+          <span class="field-label">아이콘</span>
+          <div class="avatar-choices" id="avatarChoices"></div>
         </div>
         <div class="join-grid">
           <button id="createRoomBtn" class="primary">방 만들기</button>
@@ -90,6 +94,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="app.js?v=20260604-wolf-winner" type="module"></script>
+    <script src="app.js?v=20260604-avatar-chat-reset" type="module"></script>
   </body>
 </html>
