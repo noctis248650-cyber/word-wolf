@@ -400,6 +400,7 @@ function renderHintPanel() {
   hintButton.disabled = !canSubmit;
   hintButton.dataset.keepDisabled = canSubmit ? "false" : "true";
   hintForm.classList.toggle("hidden", state.room.phase !== "hint");
+  hintForm.classList.toggle("is-live", canSubmit);
   hintInput.placeholder = canSubmit ? "30초 안에 짧은 힌트 제출" : "내 차례가 되면 입력할 수 있어요";
 }
 
