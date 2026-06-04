@@ -26,4 +26,4 @@ jobs:
           version: latest
       - name: Deploy AI bot function
         if: env.SUPABASE_ACCESS_TOKEN != ''
-        run: supabase functions deploy ai-bot-turn --project-ref "$SUPABASE_PROJECT_REF"
+        run: supabase functions deploy ai-bot-turn --project-ref "$SUPABASE_PROJECT_REF" --no-verify-jwt

@@ -171,7 +171,22 @@ async function runAiBotTurn(action, botPlayerId, extraBody = {}) {
   });
 
   if (error) {
-    throw new Error(error.message || "AI Edge Function 호출에 실패했어요.");
+    let detail = error.message || "AI Edge Function 호출에 실패했어요.";
+    try {
+      const response = error.context;
+      const text = response && typeof response.text === "function" ? await response.text() : "";
+      if (text) {
+        try {
+          const parsed = JSON.parse(text);
+          detail = parsed.error || parsed.message || text;
+        } catch {
+          detail = text;
+        }
+      }
+    } catch {
+      // Keep the original Supabase Functions error message.
+    }
+    throw new Error(detail);
   }
   if (data?.error) {
     throw new Error(data.error);
