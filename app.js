@@ -93,7 +93,8 @@ let state = {
   timerHandle: null,
   busy: false,
   messages: [],
-  selectedAvatar: normalizeAvatarId(localStorage.getItem("wordWolfAvatar"))
+  selectedAvatar: normalizeAvatarId(localStorage.getItem("wordWolfAvatar")),
+  roomBadgeResetHandle: null
 };
 
 function currentPlayer() {
@@ -185,6 +186,8 @@ function clearSession() {
   state.room = null;
   state.playerId = "";
   state.messages = [];
+  clearTimeout(state.roomBadgeResetHandle);
+  state.roomBadgeResetHandle = null;
   localStorage.removeItem("wordWolfRoomCode");
   localStorage.removeItem("wordWolfPlayerId");
 
@@ -192,6 +195,7 @@ function clearSession() {
   entryPanel.classList.remove("hidden");
   leaveRoomBtn.classList.add("hidden");
   roomBadge.textContent = "대기 중";
+  roomBadge.disabled = true;
   timerEl.textContent = "--:--";
   mastTimerEl.textContent = "--:--";
   mastTimerEl.classList.add("hidden");
@@ -759,6 +763,8 @@ function render() {
   gamePanel.classList.remove("hidden");
   leaveRoomBtn.classList.remove("hidden");
   roomBadge.textContent = `방 코드 ${room.code}`;
+  roomBadge.disabled = false;
+  roomBadge.title = "방 코드 복사";
   phaseTitle.textContent = phaseLabel(room.phase);
   renderPlayers();
   renderSecret();
@@ -794,6 +800,23 @@ joinRoomBtn.addEventListener("click", () =>
 
 roomCodeInput.addEventListener("input", () => {
   roomCodeInput.value = roomCodeInput.value.toUpperCase();
+});
+
+roomBadge.addEventListener("click", async () => {
+  if (!state.room?.code) return;
+
+  try {
+    await navigator.clipboard.writeText(state.room.code);
+    clearTimeout(state.roomBadgeResetHandle);
+    roomBadge.textContent = "복사됨";
+    roomBadge.classList.add("copied");
+    state.roomBadgeResetHandle = window.setTimeout(() => {
+      roomBadge.textContent = `방 코드 ${state.room?.code || ""}`;
+      roomBadge.classList.remove("copied");
+    }, 1200);
+  } catch {
+    setMessage("클립보드 복사에 실패했어요. 방 코드를 직접 선택해서 복사해주세요.", true);
+  }
 });
 
 leaveRoomBtn.addEventListener("click", () =>
