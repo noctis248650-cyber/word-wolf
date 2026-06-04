@@ -40,13 +40,25 @@ To let GitHub sync the CSV into Supabase, add these GitHub repository secrets:
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `SUPABASE_DB_URL`
+- `SUPABASE_ACCESS_TOKEN`
 
 Use the `service_role` key only as a GitHub secret. Never put it in `supabase-config.js`.
 Use `SUPABASE_DB_URL` only as a GitHub secret. It is used by `Run Supabase Migrations`.
+Use `SUPABASE_ACCESS_TOKEN` only as a GitHub secret. It is used by `Deploy Supabase Functions`.
 For GitHub Actions, prefer the Supabase `Transaction pooler` connection string over the direct `db.<project>.supabase.co:5432` string because some runners cannot reach the direct IPv6 database host.
 
 If the sync workflow fails, open the failed run > `sync` job > `Sync words to Supabase`.
 The Node.js deprecation text is only a warning; the real error is usually below that step.
+
+## LLM AI Players
+
+The app can run lobby AI players through Supabase Edge Functions and OpenAI.
+
+1. Add `OPENAI_API_KEY` in Supabase Dashboard > Edge Functions > Secrets.
+2. Add `SUPABASE_ACCESS_TOKEN` in GitHub repository secrets.
+3. Push changes or run `Deploy Supabase Functions` manually in GitHub Actions.
+
+The browser never receives the OpenAI key. It calls the `ai-bot-turn` Edge Function, and the function uses `gpt-4.1-mini` to generate AI hints, votes, and wolf guesses.
 
 ## Local Run
 
@@ -81,7 +93,7 @@ Because the app uses relative paths, it can run from a subpath like:
 - Each player privately sees their assigned word
 - Timed phase flow:
   - Word reveal: 15 seconds
-  - Hint round: 15 seconds per player
+  - Hint round: 30 seconds per player
   - Free discussion: 180 seconds
   - Vote: 30 seconds
   - Wolf final guess: 30 seconds if the vote catches the wolf

@@ -1,0 +1,29 @@
+name: Deploy Supabase Functions
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/functions/**"
+      - ".github/workflows/deploy-functions.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_REF: iiniidqjoryemmaigkxb
+    steps:
+      - uses: actions/checkout@v4
+      - name: Skip when access token is missing
+        if: env.SUPABASE_ACCESS_TOKEN == ''
+        run: echo "::notice::Add SUPABASE_ACCESS_TOKEN to GitHub repository secrets, then run this workflow again."
+      - uses: supabase/setup-cli@v1
+        if: env.SUPABASE_ACCESS_TOKEN != ''
+        with:
+          version: latest
+      - name: Deploy AI bot function
+        if: env.SUPABASE_ACCESS_TOKEN != ''
+        run: supabase functions deploy ai-bot-turn --project-ref "$SUPABASE_PROJECT_REF"

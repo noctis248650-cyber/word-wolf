@@ -70,33 +70,6 @@ const hasSupabaseConfig =
 
 const db = hasSupabaseConfig ? window.supabase.createClient(config.url, config.anonKey) : null;
 
-const botHints = [
-  "일상에서 자주 봐요",
-  "사람마다 취향이 갈려요",
-  "밖에서 많이 접해요",
-  "설명하면 바로 떠올라요",
-  "비슷한 느낌이 있어요",
-  "혼자보다 여럿이 더 재밌어요",
-  "어릴 때도 익숙했어요"
-];
-
-const botGuesses = [
-  "커피",
-  "도서관",
-  "비행기",
-  "피자",
-  "수영장",
-  "고양이",
-  "영화관",
-  "초콜릿",
-  "바다",
-  "축구",
-  "마법사",
-  "화산",
-  "노래방",
-  "택배"
-];
-
 let state = {
   room: null,
   playerId: localStorage.getItem("wordWolfPlayerId") || "",
@@ -176,6 +149,33 @@ async function rpc(name, args = {}) {
 
   const { data, error } = await db.rpc(name, args);
   if (error) throw new Error(normalizeRpcError(error));
+  return data;
+}
+
+async function runAiBotTurn(action, botPlayerId) {
+  if (!db) throw new Error("Supabase 설정이 필요해요.");
+  if (!isHost()) throw new Error("방장만 AI를 실행할 수 있어요.");
+
+  const { data, error } = await db.functions.invoke("ai-bot-turn", {
+    body: {
+      action,
+      code: state.room.code,
+      hostPlayerId: state.playerId,
+      botPlayerId
+    }
+  });
+
+  if (error) {
+    throw new Error(error.message || "AI Edge Function 호출에 실패했어요.");
+  }
+  if (data?.error) {
+    throw new Error(data.error);
+  }
+  if (!data?.room) {
+    throw new Error("AI 응답에서 방 상태를 받지 못했어요.");
+  }
+
+  state.room = data.room;
   return data;
 }
 
@@ -710,14 +710,10 @@ function renderHintActions() {
   addForceVoteButton();
 
   if (active?.isBot && isHost()) {
-    addButton("AI 힌트 제출", "primary", () =>
+    addButton("AI 힌트 생성", "primary", () =>
       runAction(async () => {
-        const hint = botHints[Math.floor(Math.random() * botHints.length)];
-        state.room = await rpc("ww_submit_hint", {
-          p_code: state.room.code,
-          p_player_id: active.id,
-          p_body: hint
-        });
+        setMessage(`${active.name}이 힌트를 생각하는 중이에요.`);
+        await runAiBotTurn("hint", active.id);
         render();
       })
     );
@@ -765,10 +761,12 @@ function renderVoteActions() {
   if (isHost() && state.room.players.some((player) => player.isBot && !player.votedFor)) {
     addButton("AI 투표", "", () =>
       runAction(async () => {
-        state.room = await rpc("ww_bot_vote", {
-          p_code: state.room.code,
-          p_player_id: state.playerId
-        });
+        const bots = state.room.players.filter((player) => player.isBot && !player.votedFor);
+        for (const bot of bots) {
+          if (state.room.phase !== "vote") break;
+          setMessage(`${bot.name}이 투표 대상을 고르는 중이에요.`);
+          await runAiBotTurn("vote", bot.id);
+        }
         render();
       })
     );
@@ -812,14 +810,10 @@ function renderWolfGuessActions() {
   }
 
   if (active?.isBot && isHost()) {
-    addButton("AI 추리 제출", "primary", () =>
+    addButton("AI 추리 생성", "primary", () =>
       runAction(async () => {
-        const guess = botGuesses[Math.floor(Math.random() * botGuesses.length)];
-        state.room = await rpc("ww_submit_wolf_guess", {
-          p_code: state.room.code,
-          p_player_id: active.id,
-          p_guess: guess
-        });
+        setMessage(`${active.name}이 시민 단어를 추리하는 중이에요.`);
+        await runAiBotTurn("guess", active.id);
         render();
       })
     );
