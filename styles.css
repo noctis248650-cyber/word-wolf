@@ -424,8 +424,35 @@ input:focus {
 
 .create-room-grid {
   display: grid;
-  grid-template-columns: 1fr 92px 96px;
+  grid-template-columns: 1fr 92px 92px 96px;
   gap: 8px;
+}
+
+.secret-room-toggle {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid rgba(244, 195, 95, 0.28);
+  border-radius: 8px;
+  background: rgba(244, 195, 95, 0.08);
+  color: #ffe1a1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.secret-room-toggle input {
+  width: 15px;
+  min-height: auto;
+  height: 15px;
+  accent-color: var(--gold);
+  box-shadow: none;
+}
+
+.secret-room-toggle span {
+  font-size: 12px;
+  font-weight: 950;
 }
 
 .join-code {

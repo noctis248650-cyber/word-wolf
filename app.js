@@ -6,6 +6,7 @@ const playerNameInput = document.querySelector("#playerName");
 const roomCodeInput = document.querySelector("#roomCode");
 const roomTitleInput = document.querySelector("#roomTitle");
 const maxPlayersInput = document.querySelector("#maxPlayers");
+const privateRoomInput = document.querySelector("#privateRoom");
 const avatarChoices = document.querySelector("#avatarChoices");
 const roomListEl = document.querySelector("#roomList");
 const refreshRoomsBtn = document.querySelector("#refreshRoomsBtn");
@@ -915,7 +916,8 @@ createRoomBtn.addEventListener("click", () =>
       p_name: requireName(),
       p_avatar: state.selectedAvatar,
       p_title: requireRoomTitle(),
-      p_max_players: requireMaxPlayers()
+      p_max_players: requireMaxPlayers(),
+      p_is_private: privateRoomInput.checked
     });
     saveSession(data.room, data.playerId);
     startPolling();
