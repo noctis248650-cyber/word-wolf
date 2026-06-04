@@ -28,13 +28,26 @@ const chatForm = document.querySelector("#chatForm");
 const chatInput = document.querySelector("#chatInput");
 
 const avatars = [
-  { id: "spark", icon: "✦", label: "스파크" },
-  { id: "moon", icon: "☾", label: "문" },
-  { id: "mask", icon: "◈", label: "마스크" },
-  { id: "flame", icon: "◆", label: "플레임" },
-  { id: "crystal", icon: "✧", label: "크리스탈" },
+  { id: "img1", src: "img/IMG_2026_06_04_20_25_0001.png", label: "아이콘 1" },
+  { id: "img2", src: "img/IMG_2026_06_04_20_25_0002.png", label: "아이콘 2" },
+  { id: "img3", src: "img/IMG_2026_06_04_20_25_0003.png", label: "아이콘 3" },
+  { id: "img4", src: "img/IMG_2026_06_04_20_25_0004.png", label: "아이콘 4" },
+  { id: "img5", src: "img/IMG_2026_06_04_20_25_0005.png", label: "아이콘 5" },
+  { id: "img6", src: "img/IMG_2026_06_04_20_25_0006.png", label: "아이콘 6" },
   { id: "bot", icon: "AI", label: "AI" }
 ];
+
+const legacyAvatarIds = {
+  spark: "img1",
+  moon: "img2",
+  mask: "img3",
+  flame: "img4",
+  crystal: "img5"
+};
+
+function normalizeAvatarId(id) {
+  return legacyAvatarIds[id] || id || "img1";
+}
 
 const config = window.WORD_WOLF_SUPABASE || {};
 const hasSupabaseConfig =
@@ -80,7 +93,7 @@ let state = {
   timerHandle: null,
   busy: false,
   messages: [],
-  selectedAvatar: localStorage.getItem("wordWolfAvatar") || "spark"
+  selectedAvatar: normalizeAvatarId(localStorage.getItem("wordWolfAvatar"))
 };
 
 function currentPlayer() {
@@ -96,11 +109,29 @@ function playerName(id) {
 }
 
 function avatarById(id) {
-  return avatars.find((avatar) => avatar.id === id) || avatars[0];
+  const normalizedId = normalizeAvatarId(id);
+  return avatars.find((avatar) => avatar.id === normalizedId) || avatars[0];
 }
 
 function avatarForPlayer(player) {
-  return avatarById(player?.avatar || (player?.isBot ? "bot" : "spark"));
+  return avatarById(player?.avatar || (player?.isBot ? "bot" : "img1"));
+}
+
+function createAvatarNode(avatarInfo, className) {
+  const avatar = document.createElement("span");
+  avatar.className = `${className} avatar-${avatarInfo.id}`;
+
+  if (avatarInfo.src) {
+    const image = document.createElement("img");
+    image.src = avatarInfo.src;
+    image.alt = avatarInfo.label;
+    image.loading = "eager";
+    avatar.append(image);
+  } else {
+    avatar.textContent = avatarInfo.icon;
+  }
+
+  return avatar;
 }
 
 function isHost() {
@@ -176,7 +207,7 @@ function renderAvatarChoices() {
     button.className = "avatar-choice";
     button.classList.toggle("selected", avatar.id === state.selectedAvatar);
     button.setAttribute("aria-label", avatar.label);
-    button.textContent = avatar.icon;
+    button.append(createAvatarNode(avatar, "avatar-choice-image"));
     button.addEventListener("click", () => {
       state.selectedAvatar = avatar.id;
       localStorage.setItem("wordWolfAvatar", avatar.id);
@@ -308,11 +339,8 @@ function renderPlayers() {
     const meta = document.createElement("div");
     meta.className = "player-meta";
 
-    const avatar = document.createElement("span");
     const avatarInfo = avatarForPlayer(player);
-    avatar.className = `player-avatar avatar-${avatarInfo.id}`;
-    avatar.textContent = avatarInfo.icon;
-    meta.append(avatar);
+    meta.append(createAvatarNode(avatarInfo, "player-avatar"));
 
     const name = document.createElement("span");
     name.className = "player-name";
@@ -473,7 +501,10 @@ function renderChat() {
     const name = document.createElement("div");
     name.className = "chat-name";
     const msgPlayer = playerById(msg.playerId);
-    name.textContent = `${avatarForPlayer(msgPlayer).icon} ${msg.playerName || "알 수 없음"}`;
+    name.append(createAvatarNode(avatarForPlayer(msgPlayer), "chat-avatar"));
+    const nameText = document.createElement("span");
+    nameText.textContent = msg.playerName || "알 수 없음";
+    name.append(nameText);
 
     const body = document.createElement("div");
     body.className = "chat-text";
