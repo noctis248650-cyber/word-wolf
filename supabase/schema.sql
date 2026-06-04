@@ -102,7 +102,7 @@ stable
 as $$
 declare
   game jsonb := room.current_game;
-  player jsonb;
+  player_json jsonb;
   players_json jsonb := '[]'::jsonb;
   viewer_assignment jsonb;
 begin
@@ -320,17 +320,17 @@ begin
   select array_agg(player_id)
   into wolf_ids
   from (
-    select player->>'id' as player_id
-    from jsonb_array_elements(room.players) as player
+    select elem->>'id' as player_id
+    from jsonb_array_elements(room.players) as elem
     order by random()
     limit wolf_count
   ) picked;
 
-  for player in select * from jsonb_array_elements(room.players) loop
-    is_wolf := (player->>'id') = any(wolf_ids);
+  for player_json in select * from jsonb_array_elements(room.players) loop
+    is_wolf := (player_json->>'id') = any(wolf_ids);
     assignments := jsonb_set(
       assignments,
-      array[player->>'id'],
+      array[player_json->>'id'],
       jsonb_build_object(
         'role', case when is_wolf then 'wolf' else 'villager' end,
         'word', case when is_wolf then pair.wolf else pair.villager end
