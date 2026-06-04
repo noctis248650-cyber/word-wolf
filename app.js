@@ -497,25 +497,22 @@ function renderChat() {
   for (const msg of state.messages) {
     const item = document.createElement("div");
     item.className = msg.playerId === state.playerId ? "chat-message me" : "chat-message";
+    const msgPlayer = playerById(msg.playerId);
+    item.append(createAvatarNode(avatarForPlayer(msgPlayer), "chat-message-avatar"));
+
+    const content = document.createElement("div");
+    content.className = "chat-content";
 
     const name = document.createElement("div");
     name.className = "chat-name";
-    const msgPlayer = playerById(msg.playerId);
-    name.append(createAvatarNode(avatarForPlayer(msgPlayer), "chat-avatar"));
-    const nameText = document.createElement("span");
-    nameText.textContent = msg.playerName || "알 수 없음";
-    name.append(nameText);
-
-    const body = document.createElement("div");
-    body.className = "chat-body";
-    body.append(createAvatarNode(avatarForPlayer(msgPlayer), "chat-body-avatar"));
+    name.textContent = msg.playerName || "알 수 없음";
 
     const text = document.createElement("div");
     text.className = "chat-text";
     text.textContent = msg.body;
-    body.append(text);
 
-    item.append(name, body);
+    content.append(name, text);
+    item.append(content);
     chatLog.append(item);
   }
 
