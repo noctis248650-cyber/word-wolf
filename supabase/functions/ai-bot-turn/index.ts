@@ -210,8 +210,12 @@ async function makeHint(room: RoomState, bot: Player, messages: Array<{ playerNa
     `너는 워드울프 게임의 ${role} 플레이어 "${bot.name}"이다.`,
     `네 단어: ${word}`,
     `카테고리: ${room.currentGame?.category || "알 수 없음"}`,
-    "정답 단어를 직접 말하면 안 된다. 너무 추상적이지 않게, 한 문장 또는 짧은 명사구로 자연스러운 힌트만 제출해라.",
-    "출력은 힌트 텍스트만 작성해라."
+    "힌트는 정답의 사전적 특징을 바로 설명하지 말고, 한 단계 떨어진 넓은 연상으로 제출해라.",
+    "좋은 힌트는 문화, 장소, 경험, 브랜드명, 말장난, 간접 이미지, 분위기, 용도 주변부처럼 범주가 큰 단서다.",
+    "예를 들어 선인장이라면 '가시가 많은 식물'보다 '카레', '사막 여행', '건조한 창가'처럼 한 다리 건너뛴 연상도 가능하다.",
+    "단, 너무 무관하거나 랜덤하면 안 된다. 나중에 설명하면 그럴듯하게 연결될 정도여야 한다.",
+    "금지: 정답 단어, 정답의 부분 문자열, 동의어, 상하위어, 너무 직접적인 생김새/서식지/기능 설명.",
+    "출력은 3~12글자 정도의 짧은 힌트 텍스트만 작성해라."
   ].join("\n");
 
   const context = [
@@ -219,8 +223,8 @@ async function makeHint(room: RoomState, bot: Player, messages: Array<{ playerNa
     `최근 채팅:\n${compactMessages(messages)}`
   ].join("\n\n");
 
-  const generated = await askOpenAI(prompt, context, 70);
-  return cleanShortText(generated, "일상에서 꽤 자주 접해요", 50);
+  const generated = await askOpenAI(prompt, context, 80);
+  return cleanShortText(generated, "오래 보면 떠올라요", 30);
 }
 
 async function chooseVote(room: RoomState, bot: Player, messages: Array<{ playerName: string; body: string }>) {
@@ -291,7 +295,9 @@ async function makeChatReply(room: RoomState, bot: Player, messages: Message[], 
     `현재 단계: ${room.phase}`,
     `네 단어: ${room.currentGame?.viewerWord || "게임 시작 전"}`,
     `네 역할: ${room.currentGame?.viewerRole === "wolf" ? "울프" : room.currentGame?.viewerRole === "villager" ? "시민" : "대기 중"}`,
-    "친구 채팅방처럼 짧고 자연스럽게 답해라.",
+    "방금 메시지에 직접 반응해라. 질문이면 질문에 답하고, 의견이면 그 의견에 이어서 말해라.",
+    "친구 채팅방처럼 1문장으로 짧고 자연스럽게 답해라.",
+    "뜬금없는 새 화제를 꺼내지 마라. 최근 채팅보다 방금 메시지를 우선해라.",
     "정답 단어를 직접 공개하지 말고, 힌트 단계에서도 너무 노골적인 단어는 피하라.",
     "출력은 채팅 메시지 한 줄만 작성해라."
   ].join("\n");

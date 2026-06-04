@@ -85,7 +85,8 @@ let state = {
   aiTurnInProgressKey: "",
   aiTurnFailures: new Set(),
   aiChatInProgressKey: "",
-  aiChatRepliedKeys: new Set()
+  aiChatRepliedKeys: new Set(),
+  aiChatGeneralRepliedIds: new Set()
 };
 
 playerNameInput.value = localStorage.getItem("wordWolfPlayerName") || "";
@@ -285,6 +286,18 @@ function getLatestHumanMessage() {
   return null;
 }
 
+function normalizeMentionText(text) {
+  return String(text || "").toLowerCase().replace(/\s+/g, "");
+}
+
+function mentionedBotForMessage(message, bots) {
+  const body = normalizeMentionText(message.body);
+  return bots.find((bot) => {
+    const name = normalizeMentionText(bot.name);
+    return name && body.includes(name);
+  });
+}
+
 function scheduleAiChatReply() {
   if (!isHost() || !state.room || state.busy || state.aiChatInProgressKey) return;
 
@@ -292,7 +305,17 @@ function scheduleAiChatReply() {
   if (!triggerMessage) return;
 
   const bots = state.room.players.filter((player) => player.isBot);
-  const bot = bots.find((candidate) => !state.aiChatRepliedKeys.has(`${triggerMessage.id}:${candidate.id}`));
+  const mentionedBot = mentionedBotForMessage(triggerMessage, bots);
+  let bot = mentionedBot;
+
+  if (mentionedBot) {
+    if (state.aiChatRepliedKeys.has(`${triggerMessage.id}:${mentionedBot.id}`)) return;
+  } else {
+    if (state.aiChatGeneralRepliedIds.has(triggerMessage.id)) return;
+    bot = bots.find((candidate) => !state.aiChatRepliedKeys.has(`${triggerMessage.id}:${candidate.id}`));
+    if (bot) state.aiChatGeneralRepliedIds.add(triggerMessage.id);
+  }
+
   if (!bot) return;
 
   const key = `${triggerMessage.id}:${bot.id}`;
@@ -304,6 +327,7 @@ function scheduleAiChatReply() {
     if (state.busy) {
       state.aiChatInProgressKey = "";
       state.aiChatRepliedKeys.delete(key);
+      if (!mentionedBot) state.aiChatGeneralRepliedIds.delete(triggerMessage.id);
       return;
     }
 
@@ -320,7 +344,6 @@ function scheduleAiChatReply() {
         state.aiChatInProgressKey = "";
         state.busy = false;
         setButtonsDisabled(false);
-        window.setTimeout(scheduleAiChatReply, 100);
       });
   }, 650);
 }
@@ -371,6 +394,7 @@ function clearSession() {
   state.aiTurnFailures.clear();
   state.aiChatInProgressKey = "";
   state.aiChatRepliedKeys.clear();
+  state.aiChatGeneralRepliedIds.clear();
   clearTimeout(state.roomBadgeResetHandle);
   state.roomBadgeResetHandle = null;
   localStorage.removeItem("wordWolfRoomCode");
