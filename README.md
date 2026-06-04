@@ -23,6 +23,7 @@ window.WORD_WOLF_SUPABASE = {
 The database structure and word data are intentionally separate.
 
 - `supabase/schema.sql`: tables and game RPC functions
+- `supabase/migrations/001_add_test_bots.sql`: adds test AI players to an existing database
 - `supabase/word_pairs.csv`: source-of-truth word list
 - `.github/workflows/sync-words.yml`: syncs CSV into Supabase
 - `scripts/sync-words.mjs`: sync script used by GitHub Actions
@@ -68,6 +69,8 @@ Because the app uses relative paths, it can run from a subpath like:
 - Create a room
 - Join with a nickname and room code
 - Host starts the round
+- Host can add test AI players in the lobby
+- Host can make AI players vote randomly during discussion
 - Supabase randomly picks a word pair from the word DB
 - Each player privately sees their assigned word
 - Players vote for the suspected Word Wolf

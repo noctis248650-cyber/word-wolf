@@ -246,6 +246,11 @@ input:focus {
   color: var(--blue);
 }
 
+.tag.bot {
+  background: rgba(47, 158, 143, 0.14);
+  color: var(--mint-dark);
+}
+
 .timer {
   min-width: 88px;
   border-radius: 8px;

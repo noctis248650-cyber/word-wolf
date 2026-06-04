@@ -175,6 +175,13 @@ function renderPlayers() {
       meta.append(host);
     }
 
+    if (player.isBot) {
+      const bot = document.createElement("span");
+      bot.className = "tag bot";
+      bot.textContent = "AI";
+      meta.append(bot);
+    }
+
     if (player.id === state.playerId) {
       const me = document.createElement("span");
       me.className = "tag";
@@ -230,6 +237,15 @@ function addButton(label, className, onClick) {
 
 function renderLobbyActions() {
   if (isHost()) {
+    addButton("AI 추가", "", () =>
+      runAction(async () => {
+        state.room = await rpc("ww_add_bot", {
+          p_code: state.room.code,
+          p_player_id: state.playerId
+        });
+        render();
+      })
+    );
     addButton("게임 시작", "primary", () =>
       runAction(async () => {
         state.room = await rpc("ww_start_round", {
@@ -239,7 +255,7 @@ function renderLobbyActions() {
         render();
       })
     );
-    setMessage("친구들에게 방 코드를 공유하고, 3명 이상 모이면 시작하세요.");
+    setMessage("혼자 테스트하려면 AI를 2명 추가하세요. 친구들과 할 때는 방 코드를 공유하면 됩니다.");
   } else {
     setMessage("방장이 게임을 시작할 때까지 기다리는 중이에요.");
   }
@@ -270,6 +286,17 @@ function renderDiscussionActions() {
   }
 
   if (isHost()) {
+    if (state.room.players.some((player) => player.isBot)) {
+      addButton("AI 투표", "", () =>
+        runAction(async () => {
+          state.room = await rpc("ww_bot_vote", {
+            p_code: state.room.code,
+            p_player_id: state.playerId
+          });
+          render();
+        })
+      );
+    }
     addButton("즉시 결과 공개", "danger", () =>
       runAction(async () => {
         state.room = await rpc("ww_finish_room", {
