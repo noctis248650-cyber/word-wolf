@@ -254,9 +254,52 @@ h2 {
 
 .lobby-profile strong {
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  overflow: hidden;
+}
+
+.profile-summary-avatar {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: block;
+  border: 1px solid rgba(244, 195, 95, 0.36);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(4, 8, 16, 0.68);
+}
+
+.profile-summary-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.profile-summary-text {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.profile-summary-text b,
+.profile-summary-text small {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.profile-summary-text b {
+  color: #fff2c2;
+  font-size: 13px;
+}
+
+.profile-summary-text small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 850;
 }
 
 .lobby-profile button {
@@ -344,6 +387,7 @@ input:focus {
 }
 
 .avatar-choice-image img,
+.profile-summary-avatar img,
 .player-avatar img,
 .chat-message-avatar img {
   width: 100%;

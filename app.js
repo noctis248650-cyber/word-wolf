@@ -246,7 +246,16 @@ function renderEntryStep() {
   lobbyStep.classList.toggle("hidden", !state.profileReady);
 
   if (state.profileReady) {
-    profileSummary.textContent = `${name || "플레이어"} · 아이콘 선택 완료`;
+    profileSummary.innerHTML = "";
+    const avatar = createAvatarNode(avatarById(state.selectedAvatar), "profile-summary-avatar");
+    const text = document.createElement("span");
+    text.className = "profile-summary-text";
+    const playerName = document.createElement("b");
+    playerName.textContent = name || "플레이어";
+    const caption = document.createElement("small");
+    caption.textContent = "아이콘 선택 완료";
+    text.append(playerName, caption);
+    profileSummary.append(avatar, text);
   }
 }
 
