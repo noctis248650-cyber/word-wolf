@@ -507,8 +507,13 @@ function renderChat() {
     name.append(nameText);
 
     const body = document.createElement("div");
-    body.className = "chat-text";
-    body.textContent = msg.body;
+    body.className = "chat-body";
+    body.append(createAvatarNode(avatarForPlayer(msgPlayer), "chat-body-avatar"));
+
+    const text = document.createElement("div");
+    text.className = "chat-text";
+    text.textContent = msg.body;
+    body.append(text);
 
     item.append(name, body);
     chatLog.append(item);
