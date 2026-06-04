@@ -136,6 +136,18 @@ function cleanShortText(text: string, fallback: string, maxLength = 40) {
   return cleaned.slice(0, maxLength).trim() || fallback;
 }
 
+function normalizeKeyword(text: string) {
+  return String(text || "").toLowerCase().replace(/\s+/g, "");
+}
+
+function containsKeyword(text: string, keywords: string[]) {
+  const normalizedText = normalizeKeyword(text);
+  return keywords
+    .map(normalizeKeyword)
+    .filter((keyword) => keyword.length >= 2)
+    .some((keyword) => normalizedText.includes(keyword));
+}
+
 async function askOpenAI(instructions: string, input: string, maxOutputTokens = 90) {
   if (!openaiKey) {
     throw new Error("OPENAI_API_KEY Edge Function secret이 없어요.");
@@ -178,6 +190,26 @@ async function loadViewerRoom(code: string, viewerPlayerId: string) {
   });
 }
 
+async function loadForbiddenWords(code: string) {
+  if (!supabaseUrl || !supabaseKey) return [];
+
+  const response = await fetch(
+    `${supabaseUrl}/rest/v1/ww_rooms?code=eq.${encodeURIComponent(code)}&select=current_game`,
+    {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`
+      }
+    }
+  );
+
+  if (!response.ok) return [];
+
+  const rows = await response.json();
+  const pair = rows?.[0]?.current_game?.pair || {};
+  return [pair.villager, pair.wolf].filter((word) => typeof word === "string" && word.trim());
+}
+
 function validateRequest(request: BotTurnRequest) {
   if (!request.code || !request.hostPlayerId || !request.botPlayerId || !request.action) {
     throw new Error("AI 요청 정보가 부족해요.");
@@ -199,13 +231,21 @@ function validateBotControl(room: RoomState, hostPlayerId: string, botPlayerId: 
   return bot;
 }
 
-async function makeHint(room: RoomState, bot: Player, messages: Array<{ playerName: string; body: string }>) {
+async function makeHint(
+  room: RoomState,
+  bot: Player,
+  messages: Array<{ playerName: string; body: string }>,
+  forbiddenKeywords: string[]
+) {
   if (room.phase !== "hint" || room.currentGame?.activePlayerId !== bot.id) {
     throw new Error("지금은 이 AI의 힌트 차례가 아니에요.");
   }
 
   const word = room.currentGame?.viewerWord || "";
   const role = room.currentGame?.viewerRole === "wolf" ? "울프" : "시민";
+  const forbiddenWords = Array.from(new Set([word, ...forbiddenKeywords].filter(Boolean)));
+  const villagerHintFallbacks = ["먼 길 여행", "오래된 취향", "낯선 가게", "조용한 오후", "먼지 낀 선반"];
+  const wolfHintFallbacks = ["어디선가 본 느낌", "살짝 비슷한 결", "말하기 애매함", "기억의 주변부", "익숙한 분위기"];
   const prompt = [
     `너는 워드울프 게임의 ${role} 플레이어 "${bot.name}"이다.`,
     `네 단어: ${word}`,
@@ -214,17 +254,25 @@ async function makeHint(room: RoomState, bot: Player, messages: Array<{ playerNa
     "좋은 힌트는 문화, 장소, 경험, 브랜드명, 말장난, 간접 이미지, 분위기, 용도 주변부처럼 범주가 큰 단서다.",
     "예를 들어 선인장이라면 '가시가 많은 식물'보다 '카레', '사막 여행', '건조한 창가'처럼 한 다리 건너뛴 연상도 가능하다.",
     "단, 너무 무관하거나 랜덤하면 안 된다. 나중에 설명하면 그럴듯하게 연결될 정도여야 한다.",
-    "금지: 정답 단어, 정답의 부분 문자열, 동의어, 상하위어, 너무 직접적인 생김새/서식지/기능 설명.",
+    "절대 금지: 네 단어를 힌트에 그대로 쓰기, 네 단어의 일부 글자를 포함하기, 상대 단어를 그대로 쓰기, 상대 단어의 일부 글자를 포함하기.",
+    "금지: 정답의 동의어, 상하위어, 너무 직접적인 생김새/서식지/기능 설명.",
     "출력은 3~12글자 정도의 짧은 힌트 텍스트만 작성해라."
   ].join("\n");
 
-  const context = [
-    `기존 힌트:\n${compactHints(room)}`,
-    `최근 채팅:\n${compactMessages(messages)}`
-  ].join("\n\n");
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const context = [
+      `기존 힌트:\n${compactHints(room)}`,
+      `최근 채팅:\n${compactMessages(messages)}`,
+      attempt > 0 ? `이전 답변에 금지 단어가 포함됐다. 이번에는 "${forbiddenWords.join(", ")}"의 글자를 절대 포함하지 마라.` : ""
+    ].filter(Boolean).join("\n\n");
 
-  const generated = await askOpenAI(prompt, context, 80);
-  return cleanShortText(generated, "오래 보면 떠올라요", 30);
+    const generated = await askOpenAI(prompt, context, 80);
+    const hint = cleanShortText(generated, "오래 보면 떠올라요", 30);
+    if (!containsKeyword(hint, forbiddenWords)) return hint;
+  }
+
+  const fallbackPool = role === "시민" ? villagerHintFallbacks : wolfHintFallbacks;
+  return fallbackPool[Math.floor(Math.random() * fallbackPool.length)];
 }
 
 async function chooseVote(room: RoomState, bot: Player, messages: Array<{ playerName: string; body: string }>) {
@@ -343,7 +391,8 @@ Deno.serve(async (request) => {
     }
 
     if (body.action === "hint") {
-      const hint = await makeHint(room, bot, messages);
+      const forbiddenWords = await loadForbiddenWords(code);
+      const hint = await makeHint(room, bot, messages, forbiddenWords);
       const updatedRoom = await rpc<RoomState>("ww_submit_hint", {
         p_code: code,
         p_player_id: bot.id,
