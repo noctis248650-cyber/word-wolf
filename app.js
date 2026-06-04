@@ -536,6 +536,20 @@ function addButton(label, className, onClick, parent = actionBar) {
   return button;
 }
 
+function addForceVoteButton() {
+  if (!isHost()) return;
+
+  addButton("즉시 투표", "danger", () =>
+    runAction(async () => {
+      state.room = await rpc("ww_force_vote", {
+        p_code: state.room.code,
+        p_player_id: state.playerId
+      });
+      render();
+    })
+  );
+}
+
 function renderLobbyActions() {
   const waitingPlayers = state.room.players.filter((player) => player.id !== state.room.hostId && !player.isBot);
   const readyCount = waitingPlayers.filter((player) => player.ready).length;
@@ -586,6 +600,7 @@ function renderRevealActions() {
 
 function renderHintActions() {
   const active = playerById(state.room.currentGame?.activePlayerId);
+  addForceVoteButton();
 
   if (active?.isBot && isHost()) {
     addButton("AI 힌트 제출", "primary", () =>
@@ -609,6 +624,7 @@ function renderHintActions() {
 }
 
 function renderDiscussionActions() {
+  addForceVoteButton();
   setMessage("채팅 시간입니다. 의심점을 이야기하세요. 180초 후 투표로 넘어갑니다.");
 }
 
