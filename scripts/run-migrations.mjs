@@ -1,6 +1,9 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import dns from "node:dns";
 import pg from "pg";
+
+dns.setDefaultResultOrder("ipv4first");
 
 const databaseUrl = String(process.env.SUPABASE_DB_URL || "").trim().replace(/^["']|["']$/g, "");
 const migrationsDir = process.env.MIGRATIONS_DIR || "supabase/migrations";
@@ -18,7 +21,16 @@ const client = new pg.Client({
   ssl: { rejectUnauthorized: false }
 });
 
-await client.connect();
+try {
+  await client.connect();
+} catch (error) {
+  if (error.code === "ENETUNREACH" || error.message?.includes("ENETUNREACH")) {
+    throw new Error(
+      "Could not reach the Supabase database host. If SUPABASE_DB_URL uses db.<project>.supabase.co:5432, replace it with the Transaction pooler connection string from Supabase Connect."
+    );
+  }
+  throw error;
+}
 
 try {
   await client.query(`

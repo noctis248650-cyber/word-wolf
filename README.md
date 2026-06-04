@@ -43,6 +43,7 @@ To let GitHub sync the CSV into Supabase, add these GitHub repository secrets:
 
 Use the `service_role` key only as a GitHub secret. Never put it in `supabase-config.js`.
 Use `SUPABASE_DB_URL` only as a GitHub secret. It is used by `Run Supabase Migrations`.
+For GitHub Actions, prefer the Supabase `Transaction pooler` connection string over the direct `db.<project>.supabase.co:5432` string because some runners cannot reach the direct IPv6 database host.
 
 If the sync workflow fails, open the failed run > `sync` job > `Sync words to Supabase`.
 The Node.js deprecation text is only a warning; the real error is usually below that step.
