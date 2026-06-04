@@ -13,6 +13,10 @@ const secretWord = document.querySelector("#secretWord");
 const categoryText = document.querySelector("#categoryText");
 const actionBar = document.querySelector("#actionBar");
 const messageEl = document.querySelector("#message");
+const chatCount = document.querySelector("#chatCount");
+const chatLog = document.querySelector("#chatLog");
+const chatForm = document.querySelector("#chatForm");
+const chatInput = document.querySelector("#chatInput");
 
 const config = window.WORD_WOLF_SUPABASE || {};
 const hasSupabaseConfig =
@@ -40,9 +44,11 @@ let state = {
   room: null,
   playerId: localStorage.getItem("wordWolfPlayerId") || "",
   pollHandle: null,
+  chatPollHandle: null,
   timerHandle: null,
   busy: false,
-  localMode: false
+  localMode: false,
+  messages: []
 };
 
 function currentPlayer() {
@@ -106,12 +112,32 @@ function startPolling() {
       setMessage(error.message, true);
     }
   }, 1200);
+
+  fetchMessages();
+  state.chatPollHandle = window.setInterval(fetchMessages, 1800);
 }
 
 function stopPolling() {
   if (state.pollHandle) {
     window.clearInterval(state.pollHandle);
     state.pollHandle = null;
+  }
+  if (state.chatPollHandle) {
+    window.clearInterval(state.chatPollHandle);
+    state.chatPollHandle = null;
+  }
+}
+
+async function fetchMessages() {
+  if (!state.room || !state.playerId || state.localMode) return;
+  try {
+    state.messages = await rpc("ww_get_messages", {
+      p_code: state.room.code,
+      p_player_id: state.playerId
+    });
+    renderChat();
+  } catch {
+    // Chat should not interrupt the main game loop.
   }
 }
 
@@ -248,6 +274,37 @@ function localResetRoom() {
     currentGame: null,
     players: state.room.players.map((player) => ({ ...player, votedFor: false }))
   };
+}
+
+function renderChat() {
+  chatCount.textContent = String(state.messages.length);
+  chatLog.innerHTML = "";
+
+  if (!state.messages.length) {
+    const empty = document.createElement("div");
+    empty.className = "chat-empty";
+    empty.textContent = "아직 대화가 없어요.";
+    chatLog.append(empty);
+    return;
+  }
+
+  for (const msg of state.messages) {
+    const item = document.createElement("div");
+    item.className = msg.playerId === state.playerId ? "chat-message me" : "chat-message";
+
+    const name = document.createElement("div");
+    name.className = "chat-name";
+    name.textContent = msg.playerName || "알 수 없음";
+
+    const body = document.createElement("div");
+    body.className = "chat-text";
+    body.textContent = msg.body;
+
+    item.append(name, body);
+    chatLog.append(item);
+  }
+
+  chatLog.scrollTop = chatLog.scrollHeight;
 }
 
 function formatTimer(ms) {
@@ -506,6 +563,7 @@ function render() {
   renderSecret();
   renderTimer();
   renderActions();
+  renderChat();
 }
 
 createRoomBtn.addEventListener("click", () =>
@@ -533,6 +591,38 @@ joinRoomBtn.addEventListener("click", () =>
 
 roomCodeInput.addEventListener("input", () => {
   roomCodeInput.value = roomCodeInput.value.toUpperCase();
+});
+
+chatForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  runAction(async () => {
+    const body = chatInput.value.trim();
+    if (!body) return;
+
+    if (state.localMode) {
+      state.messages = [
+        ...state.messages,
+        {
+          id: Date.now(),
+          playerId: state.playerId,
+          playerName: currentPlayer()?.name || "나",
+          body,
+          createdAt: Date.now()
+        }
+      ];
+      chatInput.value = "";
+      renderChat();
+      return;
+    }
+
+    state.messages = await rpc("ww_send_message", {
+      p_code: state.room.code,
+      p_player_id: state.playerId,
+      p_body: body
+    });
+    chatInput.value = "";
+    renderChat();
+  });
 });
 
 if (!hasSupabaseConfig) {

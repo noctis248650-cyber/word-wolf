@@ -74,6 +74,7 @@ Because the app uses relative paths, it can run from a subpath like:
 - Host starts the round
 - Host can add test AI players in the lobby
 - Host can make AI players vote randomly during discussion
+- Players can chat in the room for discussion
 - Supabase randomly picks a word pair from the word DB
 - Each player privately sees their assigned word
 - Players vote for the suspected Word Wolf
