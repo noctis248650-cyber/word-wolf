@@ -5,7 +5,9 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const csvPath = process.env.WORDS_CSV_PATH || "supabase/word_pairs.csv";
 
 if (!supabaseUrl || !serviceRoleKey) {
-  throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.");
+  throw new Error(
+    "GitHub Secrets are missing. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Settings > Secrets and variables > Actions."
+  );
 }
 
 function parseCsv(text) {
@@ -78,6 +80,11 @@ async function supabaseFetch(path, options = {}) {
 
   if (!response.ok) {
     const detail = await response.text();
+    if (detail.includes("ww_word_pairs") || detail.includes("relation")) {
+      throw new Error(
+        "Supabase table ww_word_pairs was not found. Run supabase/schema.sql in Supabase SQL Editor first."
+      );
+    }
     throw new Error(`Supabase request failed: ${response.status} ${detail}`);
   }
 

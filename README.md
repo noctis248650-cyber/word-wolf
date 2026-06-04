@@ -41,6 +41,9 @@ To let GitHub sync the CSV into Supabase, add these GitHub repository secrets:
 
 Use the `service_role` key only as a GitHub secret. Never put it in `supabase-config.js`.
 
+If the sync workflow fails, open the failed run > `sync` job > `Sync words to Supabase`.
+The Node.js deprecation text is only a warning; the real error is usually below that step.
+
 ## Local Run
 
 ```powershell
