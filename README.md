@@ -71,6 +71,7 @@ Because the app uses relative paths, it can run from a subpath like:
 
 - Create a room
 - Join with a nickname and room code
+- Leave a room and clear the local session
 - Host starts the round
 - Host can add test AI players in the lobby
 - Host can make AI players submit hints, vote, and make a final guess for solo testing

@@ -79,6 +79,12 @@ button:disabled {
   min-height: 96px;
 }
 
+.mast-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .eyebrow,
 .label {
   margin: 0;
@@ -109,6 +115,12 @@ h2 {
   background: rgba(255, 255, 255, 0.72);
   padding: 12px 16px;
   font-weight: 900;
+}
+
+.leave-room {
+  min-height: 46px;
+  padding: 0 14px;
+  color: #a24747;
 }
 
 .join-panel,
@@ -466,6 +478,16 @@ input:focus {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: 13px;
+  }
+
+  .mast-actions {
+    gap: 6px;
+  }
+
+  .leave-room {
+    min-height: 38px;
+    padding: 0 10px;
     font-size: 13px;
   }
 

@@ -5,6 +5,7 @@ const roomCodeInput = document.querySelector("#roomCode");
 const createRoomBtn = document.querySelector("#createRoomBtn");
 const joinRoomBtn = document.querySelector("#joinRoomBtn");
 const roomBadge = document.querySelector("#roomBadge");
+const leaveRoomBtn = document.querySelector("#leaveRoomBtn");
 const playerCount = document.querySelector("#playerCount");
 const playersEl = document.querySelector("#players");
 const phaseTitle = document.querySelector("#phaseTitle");
@@ -123,6 +124,25 @@ function saveSession(room, playerId) {
   state.playerId = playerId;
   localStorage.setItem("wordWolfRoomCode", room.code);
   localStorage.setItem("wordWolfPlayerId", playerId);
+}
+
+function clearSession() {
+  stopPolling();
+  clearInterval(state.timerHandle);
+  state.timerHandle = null;
+  state.room = null;
+  state.playerId = "";
+  state.messages = [];
+  localStorage.removeItem("wordWolfRoomCode");
+  localStorage.removeItem("wordWolfPlayerId");
+
+  gamePanel.classList.add("hidden");
+  entryPanel.classList.remove("hidden");
+  leaveRoomBtn.classList.add("hidden");
+  roomBadge.textContent = "대기 중";
+  timerEl.textContent = "--:--";
+  actionBar.innerHTML = "";
+  playerNameInput.focus();
 }
 
 function startPolling() {
@@ -618,6 +638,7 @@ function render() {
 
   entryPanel.classList.add("hidden");
   gamePanel.classList.remove("hidden");
+  leaveRoomBtn.classList.remove("hidden");
   roomBadge.textContent = `방 코드 ${room.code}`;
   phaseTitle.textContent = phaseLabel(room.phase);
   renderPlayers();
@@ -654,6 +675,24 @@ joinRoomBtn.addEventListener("click", () =>
 roomCodeInput.addEventListener("input", () => {
   roomCodeInput.value = roomCodeInput.value.toUpperCase();
 });
+
+leaveRoomBtn.addEventListener("click", () =>
+  runAction(async () => {
+    const code = state.room?.code;
+    const playerId = state.playerId;
+    if (code && playerId) {
+      try {
+        await rpc("ww_leave_room", {
+          p_code: code,
+          p_player_id: playerId
+        });
+      } catch {
+        // Leaving should still clear this browser even if the room was already gone.
+      }
+    }
+    clearSession();
+  })
+);
 
 hintForm.addEventListener("submit", (event) => {
   event.preventDefault();
