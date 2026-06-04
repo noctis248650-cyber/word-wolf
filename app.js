@@ -86,7 +86,8 @@ let state = {
   aiTurnFailures: new Set(),
   aiChatInProgressKey: "",
   aiChatRepliedKeys: new Set(),
-  aiChatGeneralRepliedIds: new Set()
+  aiChatGeneralRepliedIds: new Set(),
+  aiChatGeneralIndex: 0
 };
 
 playerNameInput.value = localStorage.getItem("wordWolfPlayerName") || "";
@@ -294,8 +295,23 @@ function mentionedBotForMessage(message, bots) {
   const body = normalizeMentionText(message.body);
   return bots.find((bot) => {
     const name = normalizeMentionText(bot.name);
-    return name && body.includes(name);
+    return name && body.startsWith(name);
   });
+}
+
+function nextGeneralChatBot(message, bots) {
+  if (!bots.length) return null;
+
+  for (let offset = 0; offset < bots.length; offset += 1) {
+    const index = (state.aiChatGeneralIndex + offset) % bots.length;
+    const bot = bots[index];
+    if (!state.aiChatRepliedKeys.has(`${message.id}:${bot.id}`)) {
+      state.aiChatGeneralIndex = (index + 1) % bots.length;
+      return bot;
+    }
+  }
+
+  return null;
 }
 
 function scheduleAiChatReply() {
@@ -312,7 +328,7 @@ function scheduleAiChatReply() {
     if (state.aiChatRepliedKeys.has(`${triggerMessage.id}:${mentionedBot.id}`)) return;
   } else {
     if (state.aiChatGeneralRepliedIds.has(triggerMessage.id)) return;
-    bot = bots.find((candidate) => !state.aiChatRepliedKeys.has(`${triggerMessage.id}:${candidate.id}`));
+    bot = nextGeneralChatBot(triggerMessage, bots);
     if (bot) state.aiChatGeneralRepliedIds.add(triggerMessage.id);
   }
 
@@ -395,6 +411,7 @@ function clearSession() {
   state.aiChatInProgressKey = "";
   state.aiChatRepliedKeys.clear();
   state.aiChatGeneralRepliedIds.clear();
+  state.aiChatGeneralIndex = 0;
   clearTimeout(state.roomBadgeResetHandle);
   state.roomBadgeResetHandle = null;
   localStorage.removeItem("wordWolfRoomCode");
