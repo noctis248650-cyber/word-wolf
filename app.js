@@ -402,6 +402,7 @@ function renderPlayers() {
 function renderSecret() {
   secretCard.classList.toggle("hidden", ["lobby", "discussion"].includes(state.room.phase));
   secretCard.classList.remove("is-wolf-win");
+  secretCard.classList.remove("is-wolf-guess");
 
   const game = state.room.currentGame;
   if (!game) {
@@ -426,9 +427,16 @@ function renderSecret() {
     return;
   }
 
-  if (state.room.phase === "wolf_guess" && isActivePlayer()) {
-    secretWord.textContent = "정답 추리";
-    categoryText.textContent = "당신이 울프로 지목됐어요. 시민들의 진짜 단어를 맞히면 울프가 승리합니다.";
+  if (state.room.phase === "wolf_guess") {
+    const active = playerById(game.activePlayerId);
+    secretCard.classList.add("is-wolf-guess");
+    if (isActivePlayer()) {
+      secretWord.textContent = "정답 추리";
+      categoryText.textContent = "당신이 울프로 지목됐어요. 시민들의 진짜 단어를 맞히면 울프가 승리합니다.";
+    } else {
+      secretWord.textContent = `${active?.name || "울프"} 추리 중`;
+      categoryText.textContent = "울프가 시민 단어를 맞히는 중입니다. 맞히면 울프가 역전 승리합니다.";
+    }
     return;
   }
 
