@@ -10,6 +10,7 @@ const playerCount = document.querySelector("#playerCount");
 const playersEl = document.querySelector("#players");
 const phaseTitle = document.querySelector("#phaseTitle");
 const timerEl = document.querySelector("#timer");
+const secretCard = document.querySelector("#secretCard");
 const secretWord = document.querySelector("#secretWord");
 const categoryText = document.querySelector("#categoryText");
 const actionBar = document.querySelector("#actionBar");
@@ -216,7 +217,7 @@ function phaseLabel(phase) {
       lobby: "대기실",
       reveal: "단어 확인",
       hint: "힌트 라운드",
-      discussion: "자유 토론",
+      discussion: "채팅",
       vote: "투표",
       wolf_guess: "울프 최종 추리",
       result: "결과 공개"
@@ -277,6 +278,13 @@ function renderPlayers() {
       meta.append(bot);
     }
 
+    if (room.phase === "lobby" && player.id !== room.hostId && !player.isBot) {
+      const ready = document.createElement("span");
+      ready.className = player.ready ? "tag ready" : "tag not-ready";
+      ready.textContent = player.ready ? "준비" : "대기";
+      meta.append(ready);
+    }
+
     if (player.id === state.playerId) {
       const me = document.createElement("span");
       me.className = "tag";
@@ -305,6 +313,8 @@ function renderPlayers() {
 }
 
 function renderSecret() {
+  secretCard.classList.toggle("hidden", ["lobby", "discussion"].includes(state.room.phase));
+
   const game = state.room.currentGame;
   if (!game) {
     secretWord.textContent = "게임 시작 전";
@@ -389,7 +399,7 @@ function renderHintPanel() {
 }
 
 function renderChat() {
-  chatCount.textContent = String(state.messages.length);
+  if (chatCount) chatCount.textContent = "";
   chatLog.innerHTML = "";
 
   if (!state.messages.length) {
@@ -433,6 +443,10 @@ function addButton(label, className, onClick, parent = actionBar) {
 }
 
 function renderLobbyActions() {
+  const waitingPlayers = state.room.players.filter((player) => player.id !== state.room.hostId && !player.isBot);
+  const readyCount = waitingPlayers.filter((player) => player.ready).length;
+  const allReady = waitingPlayers.length === 0 || readyCount === waitingPlayers.length;
+
   if (isHost()) {
     addButton("AI 추가", "", () =>
       runAction(async () => {
@@ -443,7 +457,7 @@ function renderLobbyActions() {
         render();
       })
     );
-    addButton("게임 시작", "primary", () =>
+    const startButton = addButton("게임 시작", "primary", () =>
       runAction(async () => {
         setMessage("게임을 시작하는 중이에요.");
         state.room = await rpc("ww_start_round", {
@@ -453,9 +467,22 @@ function renderLobbyActions() {
         render();
       })
     );
-    setMessage("혼자 테스트하려면 AI를 2명 추가하세요. 친구들과 할 때는 방 코드를 공유하면 됩니다.");
+    startButton.disabled = !allReady;
+    startButton.dataset.keepDisabled = allReady ? "false" : "true";
+    const readyText = waitingPlayers.length ? `준비 ${readyCount}/${waitingPlayers.length}` : "AI 테스트 모드";
+    setMessage(allReady ? `${readyText}. 게임을 시작할 수 있어요.` : `${readyText}. 방장 제외 모두 준비 완료해야 시작할 수 있어요.`);
   } else {
-    setMessage("방장이 게임을 시작할 때까지 기다리는 중이에요.");
+    const ready = Boolean(currentPlayer()?.ready);
+    addButton(ready ? "준비 취소" : "준비 완료", ready ? "" : "primary", () =>
+      runAction(async () => {
+        state.room = await rpc("ww_toggle_ready", {
+          p_code: state.room.code,
+          p_player_id: state.playerId
+        });
+        render();
+      })
+    );
+    setMessage(ready ? "준비 완료 상태예요. 시작 전까지 취소할 수 있어요." : "준비가 되면 준비 완료를 눌러주세요.");
   }
 }
 
@@ -488,7 +515,7 @@ function renderHintActions() {
 }
 
 function renderDiscussionActions() {
-  setMessage("자유 토론 시간입니다. 채팅으로 의심점을 이야기하세요. 180초 후 투표로 넘어갑니다.");
+  setMessage("채팅 시간입니다. 의심점을 이야기하세요. 180초 후 투표로 넘어갑니다.");
 }
 
 function renderVoteActions() {
