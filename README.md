@@ -7,10 +7,9 @@ Room-based Word Wolf web prototype for GitHub Pages + Supabase.
 1. Open your Supabase project.
 2. Go to SQL Editor.
 3. Paste and run `supabase/schema.sql`.
-4. Paste and run `supabase/seed_words.sql`.
-5. Go to Project Settings > API.
-6. Copy `Project URL` and `anon public` key.
-7. Paste them into `supabase-config.js`.
+4. Go to Project Settings > API.
+5. Copy `Project URL` and `anon public` key.
+6. Paste them into `supabase-config.js`.
 
 ```js
 window.WORD_WOLF_SUPABASE = {
@@ -24,15 +23,23 @@ window.WORD_WOLF_SUPABASE = {
 The database structure and word data are intentionally separate.
 
 - `supabase/schema.sql`: tables and game RPC functions
-- `supabase/seed_words.sql`: small starter word set
-- `supabase/words.sample.csv`: CSV format for bulk import
+- `supabase/word_pairs.csv`: source-of-truth word list
+- `.github/workflows/sync-words.yml`: syncs CSV into Supabase
+- `scripts/sync-words.mjs`: sync script used by GitHub Actions
 
-For a large word list, use Supabase Table Editor > `ww_word_pairs` > Import data from CSV. The CSV columns should be:
+The CSV columns should be:
 
 ```csv
 villager,wolf,category
 커피,홍차,음료
 ```
+
+To let GitHub sync the CSV into Supabase, add these GitHub repository secrets:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+Use the `service_role` key only as a GitHub secret. Never put it in `supabase-config.js`.
 
 ## Local Run
 
