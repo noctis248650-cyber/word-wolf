@@ -54,6 +54,18 @@
             <span id="categoryText">방장이 시작하면 각자 다른 화면에 비밀 단어가 표시돼요.</span>
           </div>
 
+          <section class="hint-panel" id="hintPanel">
+            <div class="panel-head">
+              <span>힌트 제출</span>
+              <strong id="activeHintPlayer">대기</strong>
+            </div>
+            <div class="hint-list" id="hintList"></div>
+            <form class="hint-form" id="hintForm">
+              <input id="hintInput" maxlength="50" placeholder="15초 안에 짧은 힌트 제출" />
+              <button type="submit">힌트</button>
+            </form>
+          </section>
+
           <div class="action-bar" id="actionBar"></div>
           <div class="message" id="message"></div>
 

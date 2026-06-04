@@ -73,11 +73,19 @@ Because the app uses relative paths, it can run from a subpath like:
 - Join with a nickname and room code
 - Host starts the round
 - Host can add test AI players in the lobby
-- Host can make AI players vote randomly during discussion
-- Players can chat in the room for discussion
+- Host can make AI players submit hints, vote, and make a final guess for solo testing
+- Players can chat in the room during every phase
 - Supabase randomly picks a word pair from the word DB
 - Each player privately sees their assigned word
-- Players vote for the suspected Word Wolf
-- Results reveal the wolf and both words
+- Timed phase flow:
+  - Word reveal: 15 seconds
+  - Hint round: 15 seconds per player
+  - Free discussion: 180 seconds
+  - Vote: 30 seconds
+  - Wolf final guess: 30 seconds if the vote catches the wolf
+- Hints are submitted in a separate hint panel, while chat stays open
+- If the vote misses the wolf, the wolf wins
+- If the vote catches the wolf, the wolf can still win by guessing the citizen word
+- Results reveal the wolf, both words, and the final reason
 
 Rooms are stored in Supabase. Direct table reads are blocked by RLS; the app uses RPC functions so each player only receives their own secret word.

@@ -13,6 +13,11 @@ const secretWord = document.querySelector("#secretWord");
 const categoryText = document.querySelector("#categoryText");
 const actionBar = document.querySelector("#actionBar");
 const messageEl = document.querySelector("#message");
+const hintPanel = document.querySelector("#hintPanel");
+const activeHintPlayer = document.querySelector("#activeHintPlayer");
+const hintList = document.querySelector("#hintList");
+const hintForm = document.querySelector("#hintForm");
+const hintInput = document.querySelector("#hintInput");
 const chatCount = document.querySelector("#chatCount");
 const chatLog = document.querySelector("#chatLog");
 const chatForm = document.querySelector("#chatForm");
@@ -27,17 +32,31 @@ const hasSupabaseConfig =
 
 const db = hasSupabaseConfig ? window.supabase.createClient(config.url, config.anonKey) : null;
 
-const localWordPairs = [
-  { villager: "커피", wolf: "홍차", category: "음료" },
-  { villager: "도서관", wolf: "서점", category: "장소" },
-  { villager: "비행기", wolf: "기차", category: "교통" },
-  { villager: "피자", wolf: "햄버거", category: "음식" },
-  { villager: "수영장", wolf: "목욕탕", category: "장소" },
-  { villager: "고양이", wolf: "강아지", category: "동물" },
-  { villager: "영화관", wolf: "공연장", category: "문화" },
-  { villager: "초콜릿", wolf: "사탕", category: "간식" },
-  { villager: "바다", wolf: "호수", category: "자연" },
-  { villager: "축구", wolf: "농구", category: "운동" }
+const botHints = [
+  "일상에서 자주 봐요",
+  "사람마다 취향이 갈려요",
+  "밖에서 많이 접해요",
+  "설명하면 바로 떠올라요",
+  "비슷한 느낌이 있어요",
+  "혼자보다 여럿이 더 재밌어요",
+  "어릴 때도 익숙했어요"
+];
+
+const botGuesses = [
+  "커피",
+  "도서관",
+  "비행기",
+  "피자",
+  "수영장",
+  "고양이",
+  "영화관",
+  "초콜릿",
+  "바다",
+  "축구",
+  "마법사",
+  "화산",
+  "노래방",
+  "택배"
 ];
 
 let state = {
@@ -47,7 +66,6 @@ let state = {
   chatPollHandle: null,
   timerHandle: null,
   busy: false,
-  localMode: false,
   messages: []
 };
 
@@ -55,8 +73,20 @@ function currentPlayer() {
   return state.room?.players.find((player) => player.id === state.playerId) || null;
 }
 
+function playerById(id) {
+  return state.room?.players.find((player) => player.id === id) || null;
+}
+
+function playerName(id) {
+  return playerById(id)?.name || "알 수 없음";
+}
+
 function isHost() {
   return state.room?.hostId === state.playerId;
+}
+
+function isActivePlayer() {
+  return state.room?.currentGame?.activePlayerId === state.playerId;
 }
 
 function setMessage(message, isError = false) {
@@ -102,11 +132,10 @@ function startPolling() {
   state.pollHandle = window.setInterval(async () => {
     if (state.busy) return;
     try {
-      const room = await rpc("ww_get_room_state", {
+      state.room = await rpc("ww_advance_phase", {
         p_code: state.room.code,
         p_player_id: state.playerId
       });
-      state.room = room;
       render();
     } catch (error) {
       setMessage(error.message, true);
@@ -129,7 +158,7 @@ function stopPolling() {
 }
 
 async function fetchMessages() {
-  if (!state.room || !state.playerId || state.localMode) return;
+  if (!state.room || !state.playerId) return;
   try {
     state.messages = await rpc("ww_get_messages", {
       p_code: state.room.code,
@@ -157,154 +186,22 @@ async function runAction(callback) {
 
 function setButtonsDisabled(disabled) {
   for (const button of document.querySelectorAll("button")) {
-    button.disabled = disabled;
+    button.disabled = disabled || button.dataset.keepDisabled === "true";
   }
 }
 
 function phaseLabel(phase) {
-  return {
-    lobby: "대기실",
-    discussion: "토론 및 투표",
-    result: "결과 공개"
-  }[phase] || "대기 중";
-}
-
-function shuffled(items) {
-  return [...items].sort(() => Math.random() - 0.5);
-}
-
-function localStartRound() {
-  const pair = localWordPairs[Math.floor(Math.random() * localWordPairs.length)];
-  const playerIds = state.room.players.map((player) => player.id);
-  const wolfId = shuffled(playerIds)[0];
-  const assignments = {};
-  const now = Date.now();
-
-  for (const id of playerIds) {
-    const isWolf = id === wolfId;
-    assignments[id] = {
-      role: isWolf ? "wolf" : "villager",
-      word: isWolf ? pair.wolf : pair.villager
-    };
-  }
-
-  state.localMode = true;
-  stopPolling();
-  state.room = {
-    ...state.room,
-    phase: "discussion",
-    round: state.room.round + 1,
-    currentGame: {
-      category: pair.category,
-      startedAt: now,
-      discussionEndsAt: now + state.room.settings.discussionSeconds * 1000,
-      votes: {},
-      result: null,
-      viewerWord: assignments[state.playerId]?.word || null,
-      viewerRole: assignments[state.playerId]?.role || null,
-      localPair: pair,
-      localWolfIds: [wolfId],
-      localAssignments: assignments
-    }
-  };
-}
-
-function localVote(playerId, targetId) {
-  if (!state.room?.currentGame) return;
-  state.room.currentGame.votes = {
-    ...state.room.currentGame.votes,
-    [playerId]: targetId
-  };
-  state.room.players = state.room.players.map((player) => ({
-    ...player,
-    votedFor: Boolean(state.room.currentGame.votes[player.id])
-  }));
-  if (Object.keys(state.room.currentGame.votes).length >= state.room.players.length) {
-    localFinishRound();
-  }
-}
-
-function localBotVote() {
-  const bots = state.room.players.filter((player) => player.isBot && !state.room.currentGame.votes[player.id]);
-  for (const bot of bots) {
-    const targets = state.room.players.filter((player) => player.id !== bot.id);
-    const target = targets[Math.floor(Math.random() * targets.length)];
-    if (target) localVote(bot.id, target.id);
-  }
-}
-
-function localFinishRound() {
-  const game = state.room.currentGame;
-  const counts = new Map();
-
-  for (const targetId of Object.values(game.votes)) {
-    counts.set(targetId, (counts.get(targetId) || 0) + 1);
-  }
-
-  const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
-  const topScore = sorted[0]?.[1] || 0;
-  const topTargets = sorted.filter(([, score]) => score === topScore).map(([id]) => id);
-  const eliminatedId = topTargets.length === 1 ? topTargets[0] : null;
-  const villagersWin = eliminatedId ? game.localWolfIds.includes(eliminatedId) : false;
-
-  state.room = {
-    ...state.room,
-    phase: "result",
-    currentGame: {
-      ...game,
-      result: {
-        eliminatedId,
-        tie: !eliminatedId,
-        winners: villagersWin ? "villagers" : "wolves",
-        words: {
-          villager: game.localPair.villager,
-          wolf: game.localPair.wolf
-        },
-        wolves: game.localWolfIds
-      }
-    }
-  };
-}
-
-function localResetRoom() {
-  state.localMode = false;
-  state.room = {
-    ...state.room,
-    phase: "lobby",
-    currentGame: null,
-    players: state.room.players.map((player) => ({ ...player, votedFor: false }))
-  };
-}
-
-function renderChat() {
-  chatCount.textContent = String(state.messages.length);
-  chatLog.innerHTML = "";
-
-  if (!state.messages.length) {
-    const empty = document.createElement("div");
-    empty.className = "chat-empty";
-    empty.textContent = "아직 대화가 없어요.";
-    chatLog.append(empty);
-    return;
-  }
-
-  for (const msg of state.messages) {
-    const item = document.createElement("div");
-    item.className = msg.playerId === state.playerId ? "chat-message me" : "chat-message";
-
-    const name = document.createElement("div");
-    name.className = "chat-name";
-    name.textContent = msg.playerName || "알 수 없음";
-
-    const body = document.createElement("div");
-    body.className = "chat-text";
-    body.textContent = msg.body;
-
-    item.append(name, body);
-    chatLog.append(item);
-  }
-
-  chatLog.scrollTop = chatLog.scrollHeight;
+  return (
+    {
+      lobby: "대기실",
+      reveal: "단어 확인",
+      hint: "힌트 라운드",
+      discussion: "자유 토론",
+      vote: "투표",
+      wolf_guess: "울프 최종 추리",
+      result: "결과 공개"
+    }[phase] || "대기 중"
+  );
 }
 
 function formatTimer(ms) {
@@ -316,8 +213,8 @@ function formatTimer(ms) {
 
 function renderTimer() {
   clearInterval(state.timerHandle);
-  const endsAt = state.room?.currentGame?.discussionEndsAt;
-  if (state.room?.phase !== "discussion" || !endsAt) {
+  const endsAt = state.room?.currentGame?.phaseEndsAt;
+  if (!state.room?.currentGame || state.room.phase === "lobby" || state.room.phase === "result" || !endsAt) {
     timerEl.textContent = "--:--";
     return;
   }
@@ -367,6 +264,13 @@ function renderPlayers() {
       meta.append(me);
     }
 
+    if (player.id === room.currentGame?.activePlayerId && ["hint", "wolf_guess"].includes(room.phase)) {
+      const active = document.createElement("span");
+      active.className = "tag active";
+      active.textContent = room.phase === "hint" ? "차례" : "추리";
+      meta.append(active);
+    }
+
     row.append(meta);
 
     if (player.votedFor) {
@@ -384,32 +288,126 @@ function renderSecret() {
   const game = state.room.currentGame;
   if (!game) {
     secretWord.textContent = "게임 시작 전";
-    categoryText.textContent = "방장이 시작하면 각자 다른 화면에 비밀 단어가 표시돼요.";
+    categoryText.textContent = "방장이 시작하면 각자 화면에 비밀 단어가 표시돼요.";
     return;
   }
 
   if (state.room.phase === "result") {
-    const result = game.result;
+    const result = game.result || {};
     const role = game.viewerRole === "wolf" ? "워드울프" : "시민";
-    secretWord.textContent = game.viewerWord || "공개됨";
-    categoryText.textContent = `내 역할: ${role} · 시민 단어: ${result.words.villager} · 울프 단어: ${result.words.wolf}`;
+    secretWord.textContent = result.winners === "villagers" ? "시민 승리" : "울프 승리";
+    categoryText.textContent = `내 역할: ${role} · 시민 단어: ${result.words?.villager || "-"} · 울프 단어: ${
+      result.words?.wolf || "-"
+    }`;
+    return;
+  }
+
+  if (state.room.phase === "wolf_guess" && isActivePlayer()) {
+    secretWord.textContent = "정답 추리";
+    categoryText.textContent = "당신이 울프로 지목됐어요. 시민들의 진짜 단어를 맞히면 울프가 승리합니다.";
     return;
   }
 
   secretWord.textContent = game.viewerWord || "비밀";
-  categoryText.textContent = `카테고리: ${game.category} · 이 단어를 직접 말하지 말고 설명으로만 버텨보세요.`;
+  const phaseHelp = {
+    reveal: "15초 동안 내 단어를 확인하세요.",
+    hint: "자기 차례에 단어를 직접 말하지 않는 짧은 힌트를 제출하세요.",
+    discussion: "채팅으로 자유롭게 토론하세요.",
+    vote: "워드울프라고 생각하는 사람에게 투표하세요.",
+    wolf_guess: "울프가 시민 단어를 맞히는 중입니다."
+  };
+  categoryText.textContent = `카테고리: ${game.category || "-"} · ${phaseHelp[state.room.phase] || ""}`;
+}
+
+function renderHintPanel() {
+  const game = state.room.currentGame;
+  hintPanel.classList.toggle("hidden", !game);
+  if (!game) return;
+
+  const hints = Array.isArray(game.hints) ? game.hints : [];
+  const activeId = game.activePlayerId;
+  const active = playerById(activeId);
+  const hasOwnHint = hints.some((hint) => hint.playerId === state.playerId);
+  const canSubmit = state.room.phase === "hint" && activeId === state.playerId && !hasOwnHint;
+
+  if (state.room.phase === "hint" && active) {
+    activeHintPlayer.textContent = `${active.name} 차례`;
+  } else if (hints.length > 0) {
+    activeHintPlayer.textContent = `${hints.length}개 제출`;
+  } else {
+    activeHintPlayer.textContent = "대기";
+  }
+
+  hintList.innerHTML = "";
+  if (!hints.length) {
+    const empty = document.createElement("div");
+    empty.className = "hint-item empty";
+    empty.textContent = "아직 제출된 힌트가 없어요.";
+    hintList.append(empty);
+  } else {
+    for (const hint of hints) {
+      const item = document.createElement("div");
+      item.className = "hint-item";
+
+      const name = document.createElement("strong");
+      name.textContent = hint.playerName || playerName(hint.playerId);
+
+      const body = document.createElement("span");
+      body.textContent = hint.body;
+
+      item.append(name, body);
+      hintList.append(item);
+    }
+  }
+
+  hintInput.disabled = !canSubmit;
+  const hintButton = hintForm.querySelector("button");
+  hintButton.disabled = !canSubmit;
+  hintButton.dataset.keepDisabled = canSubmit ? "false" : "true";
+  hintInput.placeholder = canSubmit ? "15초 안에 짧은 힌트 제출" : "내 차례가 되면 입력할 수 있어요";
+}
+
+function renderChat() {
+  chatCount.textContent = String(state.messages.length);
+  chatLog.innerHTML = "";
+
+  if (!state.messages.length) {
+    const empty = document.createElement("div");
+    empty.className = "chat-empty";
+    empty.textContent = "아직 대화가 없어요.";
+    chatLog.append(empty);
+    return;
+  }
+
+  for (const msg of state.messages) {
+    const item = document.createElement("div");
+    item.className = msg.playerId === state.playerId ? "chat-message me" : "chat-message";
+
+    const name = document.createElement("div");
+    name.className = "chat-name";
+    name.textContent = msg.playerName || "알 수 없음";
+
+    const body = document.createElement("div");
+    body.className = "chat-text";
+    body.textContent = msg.body;
+
+    item.append(name, body);
+    chatLog.append(item);
+  }
+
+  chatLog.scrollTop = chatLog.scrollHeight;
 }
 
 function clearActions() {
   actionBar.innerHTML = "";
 }
 
-function addButton(label, className, onClick) {
+function addButton(label, className, onClick, parent = actionBar) {
   const button = document.createElement("button");
   button.textContent = label;
   if (className) button.className = className;
   button.addEventListener("click", onClick);
-  actionBar.append(button);
+  parent.append(button);
   return button;
 }
 
@@ -427,11 +425,6 @@ function renderLobbyActions() {
     addButton("게임 시작", "primary", () =>
       runAction(async () => {
         setMessage("게임을 시작하는 중이에요.");
-        if (state.room.players.some((player) => player.isBot)) {
-          localStartRound();
-          render();
-          return;
-        }
         state.room = await rpc("ww_start_round", {
           p_code: state.room.code,
           p_player_id: state.playerId
@@ -445,24 +438,54 @@ function renderLobbyActions() {
   }
 }
 
+function renderRevealActions() {
+  setMessage("단어 확인 시간입니다. 잠시 후 힌트 라운드가 시작돼요.");
+}
+
+function renderHintActions() {
+  const active = playerById(state.room.currentGame?.activePlayerId);
+
+  if (active?.isBot && isHost()) {
+    addButton("AI 힌트 제출", "primary", () =>
+      runAction(async () => {
+        const hint = botHints[Math.floor(Math.random() * botHints.length)];
+        state.room = await rpc("ww_submit_hint", {
+          p_code: state.room.code,
+          p_player_id: active.id,
+          p_body: hint
+        });
+        render();
+      })
+    );
+  }
+
+  if (isActivePlayer()) {
+    setMessage("지금 당신 차례예요. 힌트 패널에 15초 안에 힌트를 제출하세요.");
+  } else {
+    setMessage(`${active?.name || "다음 플레이어"}님이 힌트를 제출하는 중이에요. 채팅은 계속 사용할 수 있어요.`);
+  }
+}
+
 function renderDiscussionActions() {
+  setMessage("자유 토론 시간입니다. 채팅으로 의심점을 이야기하세요. 180초 후 투표로 넘어갑니다.");
+}
+
+function renderVoteActions() {
   const voteList = document.createElement("div");
   voteList.className = "vote-list";
   actionBar.append(voteList);
 
+  const alreadyVoted = Boolean(currentPlayer()?.votedFor);
   for (const player of state.room.players) {
     if (player.id === state.playerId) continue;
 
     const button = document.createElement("button");
     button.className = "vote-row";
     button.textContent = `${player.name}에게 투표`;
+    button.disabled = alreadyVoted;
+    button.dataset.keepDisabled = alreadyVoted ? "true" : "false";
     button.addEventListener("click", () =>
       runAction(async () => {
-        if (state.localMode) {
-          localVote(state.playerId, player.id);
-          render();
-          return;
-        }
         state.room = await rpc("ww_vote", {
           p_code: state.room.code,
           p_player_id: state.playerId,
@@ -474,31 +497,10 @@ function renderDiscussionActions() {
     voteList.append(button);
   }
 
-  if (isHost()) {
-    if (state.room.players.some((player) => player.isBot)) {
-      addButton("AI 투표", "", () =>
-        runAction(async () => {
-          if (state.localMode) {
-            localBotVote();
-            render();
-            return;
-          }
-          state.room = await rpc("ww_bot_vote", {
-            p_code: state.room.code,
-            p_player_id: state.playerId
-          });
-          render();
-        })
-      );
-    }
-    addButton("즉시 결과 공개", "danger", () =>
+  if (isHost() && state.room.players.some((player) => player.isBot && !player.votedFor)) {
+    addButton("AI 투표", "", () =>
       runAction(async () => {
-        if (state.localMode) {
-          localFinishRound();
-          render();
-          return;
-        }
-        state.room = await rpc("ww_finish_room", {
+        state.room = await rpc("ww_bot_vote", {
           p_code: state.room.code,
           p_player_id: state.playerId
         });
@@ -507,33 +509,85 @@ function renderDiscussionActions() {
     );
   }
 
-  const voted = currentPlayer()?.votedFor;
-  setMessage(voted ? "투표가 반영됐어요. 모두 투표하면 결과가 열립니다." : "토론 후 워드울프라고 생각하는 사람에게 투표하세요.");
+  setMessage(alreadyVoted ? "투표가 반영됐어요. 모두 투표하거나 30초가 지나면 결과가 진행됩니다." : "30초 안에 워드울프라고 생각하는 사람에게 투표하세요.");
+}
+
+function renderWolfGuessActions() {
+  const active = playerById(state.room.currentGame?.activePlayerId);
+
+  if (isActivePlayer()) {
+    const form = document.createElement("form");
+    form.className = "hint-form";
+
+    const input = document.createElement("input");
+    input.maxLength = 40;
+    input.placeholder = "시민 단어 입력";
+
+    const submit = document.createElement("button");
+    submit.className = "primary";
+    submit.type = "submit";
+    submit.textContent = "추리";
+
+    form.append(input, submit);
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      runAction(async () => {
+        state.room = await rpc("ww_submit_wolf_guess", {
+          p_code: state.room.code,
+          p_player_id: state.playerId,
+          p_guess: input.value.trim()
+        });
+        render();
+      });
+    });
+    actionBar.append(form);
+    input.focus();
+    setMessage("울프로 지목됐어요. 시민의 진짜 단어를 맞히면 역전 승리입니다.");
+    return;
+  }
+
+  if (active?.isBot && isHost()) {
+    addButton("AI 추리 제출", "primary", () =>
+      runAction(async () => {
+        const guess = botGuesses[Math.floor(Math.random() * botGuesses.length)];
+        state.room = await rpc("ww_submit_wolf_guess", {
+          p_code: state.room.code,
+          p_player_id: active.id,
+          p_guess: guess
+        });
+        render();
+      })
+    );
+  }
+
+  setMessage(`${active?.name || "울프"}님이 시민 단어를 추리하는 중이에요. 30초 안에 맞히면 울프가 승리합니다.`);
 }
 
 function renderResultActions() {
   const result = state.room.currentGame?.result;
   if (!result) return;
 
-  const wolfNames = result.wolves
+  const wolfNames = (result.wolves || [])
     .map((id) => state.room.players.find((player) => player.id === id)?.name)
     .filter(Boolean)
     .join(", ");
   const eliminatedName = result.eliminatedId
     ? state.room.players.find((player) => player.id === result.eliminatedId)?.name
     : "없음";
-  const winnerText = result.winners === "villagers" ? "시민 승리" : "워드울프 승리";
+  const winnerText = result.winners === "villagers" ? "시민 승리" : "울프 승리";
+  const reasonText =
+    {
+      tie: "투표가 갈려서 울프를 잡지 못했어요.",
+      vote_missed_wolf: "투표로 울프를 잡지 못했어요.",
+      wolf_guessed_word: "울프가 시민 단어를 맞혔어요.",
+      wolf_missed_word: "울프를 잡고 최종 추리도 막았어요."
+    }[result.reason] || "게임이 종료됐어요.";
 
-  setMessage(`${winnerText}\n지목된 사람: ${eliminatedName}\n워드울프: ${wolfNames || "없음"}`);
+  setMessage(`${winnerText}\n${reasonText}\n지목된 사람: ${eliminatedName}\n워드울프: ${wolfNames || "없음"}`);
 
   if (isHost()) {
     addButton("다음 판 준비", "primary", () =>
       runAction(async () => {
-        if (state.localMode) {
-          localResetRoom();
-          render();
-          return;
-        }
         state.room = await rpc("ww_reset_room", {
           p_code: state.room.code,
           p_player_id: state.playerId
@@ -546,9 +600,16 @@ function renderResultActions() {
 
 function renderActions() {
   clearActions();
-  if (state.room.phase === "lobby") renderLobbyActions();
-  if (state.room.phase === "discussion") renderDiscussionActions();
-  if (state.room.phase === "result") renderResultActions();
+  const renderByPhase = {
+    lobby: renderLobbyActions,
+    reveal: renderRevealActions,
+    hint: renderHintActions,
+    discussion: renderDiscussionActions,
+    vote: renderVoteActions,
+    wolf_guess: renderWolfGuessActions,
+    result: renderResultActions
+  };
+  renderByPhase[state.room.phase]?.();
 }
 
 function render() {
@@ -561,6 +622,7 @@ function render() {
   phaseTitle.textContent = phaseLabel(room.phase);
   renderPlayers();
   renderSecret();
+  renderHintPanel();
   renderTimer();
   renderActions();
   renderChat();
@@ -593,27 +655,26 @@ roomCodeInput.addEventListener("input", () => {
   roomCodeInput.value = roomCodeInput.value.toUpperCase();
 });
 
+hintForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  runAction(async () => {
+    const body = hintInput.value.trim();
+    if (!body) return;
+    state.room = await rpc("ww_submit_hint", {
+      p_code: state.room.code,
+      p_player_id: state.playerId,
+      p_body: body
+    });
+    hintInput.value = "";
+    render();
+  });
+});
+
 chatForm.addEventListener("submit", (event) => {
   event.preventDefault();
   runAction(async () => {
     const body = chatInput.value.trim();
     if (!body) return;
-
-    if (state.localMode) {
-      state.messages = [
-        ...state.messages,
-        {
-          id: Date.now(),
-          playerId: state.playerId,
-          playerName: currentPlayer()?.name || "나",
-          body,
-          createdAt: Date.now()
-        }
-      ];
-      chatInput.value = "";
-      renderChat();
-      return;
-    }
 
     state.messages = await rpc("ww_send_message", {
       p_code: state.room.code,
@@ -625,6 +686,26 @@ chatForm.addEventListener("submit", (event) => {
   });
 });
 
+async function restoreSession() {
+  const code = localStorage.getItem("wordWolfRoomCode");
+  if (!code || !state.playerId || !hasSupabaseConfig) return;
+
+  try {
+    state.room = await rpc("ww_advance_phase", {
+      p_code: code,
+      p_player_id: state.playerId
+    });
+    startPolling();
+    render();
+  } catch {
+    localStorage.removeItem("wordWolfRoomCode");
+    localStorage.removeItem("wordWolfPlayerId");
+    state.playerId = "";
+  }
+}
+
 if (!hasSupabaseConfig) {
   setMessage("Supabase 설정이 필요해요. supabase-config.js에 Project URL과 anon public key를 넣어주세요.", true);
+} else {
+  restoreSession();
 }

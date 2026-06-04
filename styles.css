@@ -251,6 +251,11 @@ input:focus {
   color: var(--mint-dark);
 }
 
+.tag.active {
+  background: rgba(222, 107, 107, 0.14);
+  color: #a24747;
+}
+
 .timer {
   min-width: 88px;
   border-radius: 8px;
@@ -280,6 +285,57 @@ input:focus {
 .secret-card span {
   color: var(--muted);
   line-height: 1.6;
+}
+
+.hint-panel {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  padding: 14px;
+}
+
+.hint-list {
+  display: grid;
+  gap: 8px;
+}
+
+.hint-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 40px;
+  border-radius: 8px;
+  background: #f6f8fb;
+  padding: 8px 10px;
+}
+
+.hint-item strong {
+  flex: 0 0 auto;
+}
+
+.hint-item span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.hint-item.empty {
+  justify-content: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.hint-form {
+  display: grid;
+  grid-template-columns: 1fr 76px;
+  gap: 8px;
+}
+
+.action-bar .hint-form {
+  width: 100%;
 }
 
 .action-bar {
@@ -518,11 +574,19 @@ input:focus {
     margin-top: 12px;
   }
 
+  .hint-panel {
+    margin-top: 12px;
+  }
+
   .chat-log {
     max-height: 220px;
   }
 
   .chat-form {
+    grid-template-columns: 1fr;
+  }
+
+  .hint-form {
     grid-template-columns: 1fr;
   }
 }
