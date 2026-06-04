@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>워드울프</title>
-    <link rel="stylesheet" href="styles.css?v=20260604-status-timer" />
+    <link rel="stylesheet" href="styles.css?v=20260604-hint-turn-30" />
   </head>
   <body>
     <main class="shell">
@@ -50,7 +50,7 @@
               <h2 id="phaseTitle">대기실</h2>
               <div class="message" id="message"></div>
             </div>
-            <div class="timer" id="timer">--:--</div>
+            <div class="timer status-timer hidden" id="timer">--:--</div>
           </div>
 
           <div class="secret-card" id="secretCard">
@@ -66,7 +66,7 @@
             </div>
             <div class="hint-list" id="hintList"></div>
             <form class="hint-form" id="hintForm">
-              <input id="hintInput" maxlength="50" placeholder="15초 안에 짧은 힌트 제출" />
+              <input id="hintInput" maxlength="50" placeholder="30초 안에 짧은 힌트 제출" />
               <button type="submit">힌트</button>
             </form>
           </section>
@@ -90,6 +90,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="app.js?v=20260604-status-timer" type="module"></script>
+    <script src="app.js?v=20260604-hint-turn-30" type="module"></script>
   </body>
 </html>

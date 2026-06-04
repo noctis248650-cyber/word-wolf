@@ -263,6 +263,10 @@ function renderPlayers() {
   for (const player of room.players) {
     const row = document.createElement("div");
     row.className = "player-row";
+    const isHintTurn = player.id === room.currentGame?.activePlayerId && room.phase === "hint";
+    const isWolfGuessTurn = player.id === room.currentGame?.activePlayerId && room.phase === "wolf_guess";
+    row.classList.toggle("is-hint-turn", isHintTurn);
+    row.classList.toggle("is-active-turn", isWolfGuessTurn);
 
     const meta = document.createElement("div");
     meta.className = "player-meta";
@@ -300,7 +304,7 @@ function renderPlayers() {
       meta.append(me);
     }
 
-    if (player.id === room.currentGame?.activePlayerId && ["hint", "wolf_guess"].includes(room.phase)) {
+    if (isHintTurn || isWolfGuessTurn) {
       const active = document.createElement("span");
       active.className = "tag active";
       active.textContent = room.phase === "hint" ? "차례" : "추리";
@@ -347,14 +351,7 @@ function renderSecret() {
   }
 
   secretWord.textContent = game.viewerWord || "비밀";
-  const phaseHelp = {
-    reveal: "15초 동안 내 단어를 확인하세요.",
-    hint: "자기 차례에 단어를 직접 말하지 않는 짧은 힌트를 제출하세요.",
-    discussion: "채팅으로 자유롭게 토론하세요.",
-    vote: "워드울프라고 생각하는 사람에게 투표하세요.",
-    wolf_guess: "울프가 시민 단어를 맞히는 중입니다."
-  };
-  categoryText.textContent = `카테고리: ${game.category || "-"} · ${phaseHelp[state.room.phase] || ""}`;
+  categoryText.textContent = `카테고리: ${game.category || "-"}`;
 }
 
 function renderHintPanel() {
@@ -403,7 +400,7 @@ function renderHintPanel() {
   hintButton.disabled = !canSubmit;
   hintButton.dataset.keepDisabled = canSubmit ? "false" : "true";
   hintForm.classList.toggle("hidden", state.room.phase !== "hint");
-  hintInput.placeholder = canSubmit ? "15초 안에 짧은 힌트 제출" : "내 차례가 되면 입력할 수 있어요";
+  hintInput.placeholder = canSubmit ? "30초 안에 짧은 힌트 제출" : "내 차례가 되면 입력할 수 있어요";
 }
 
 function renderChat() {
@@ -516,7 +513,7 @@ function renderHintActions() {
   }
 
   if (isActivePlayer()) {
-    setMessage("지금 당신 차례예요. 힌트 패널에 15초 안에 힌트를 제출하세요.");
+    setMessage("지금 당신 차례예요. 힌트 패널에 30초 안에 힌트를 제출하세요.");
   } else {
     setMessage(`${active?.name || "다음 플레이어"}님이 힌트를 제출하는 중이에요. 채팅은 계속 사용할 수 있어요.`);
   }

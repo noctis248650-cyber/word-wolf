@@ -318,6 +318,24 @@ input:focus {
   border-color: var(--line-strong);
 }
 
+.player-row.is-hint-turn,
+.player-row.is-active-turn {
+  position: relative;
+  border-color: rgba(244, 195, 95, 0.92);
+  background:
+    linear-gradient(90deg, rgba(244, 195, 95, 0.24), rgba(255, 104, 104, 0.1)),
+    rgba(255, 255, 255, 0.075);
+  box-shadow:
+    0 0 22px rgba(244, 195, 95, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.player-row.is-hint-turn .player-name,
+.player-row.is-active-turn .player-name {
+  color: #ffe58a;
+  text-shadow: 0 0 12px rgba(244, 195, 95, 0.72);
+}
+
 .player-meta {
   display: flex;
   gap: 6px;
@@ -359,8 +377,9 @@ input:focus {
 }
 
 .tag.active {
-  background: rgba(255, 104, 104, 0.16);
-  color: #ffb1b1;
+  background: rgba(244, 195, 95, 0.9);
+  color: #171009;
+  border-color: rgba(255, 229, 138, 0.9);
 }
 
 .tag.ready {
@@ -389,6 +408,10 @@ input:focus {
   box-shadow:
     0 0 26px rgba(244, 195, 95, 0.34),
     inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.status-timer {
+  display: none !important;
 }
 
 .mast-timer {
