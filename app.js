@@ -10,6 +10,7 @@ const playerCount = document.querySelector("#playerCount");
 const playersEl = document.querySelector("#players");
 const phaseTitle = document.querySelector("#phaseTitle");
 const timerEl = document.querySelector("#timer");
+const mastTimerEl = document.querySelector("#mastTimer");
 const secretCard = document.querySelector("#secretCard");
 const secretWord = document.querySelector("#secretWord");
 const categoryText = document.querySelector("#categoryText");
@@ -142,6 +143,8 @@ function clearSession() {
   leaveRoomBtn.classList.add("hidden");
   roomBadge.textContent = "대기 중";
   timerEl.textContent = "--:--";
+  mastTimerEl.textContent = "--:--";
+  mastTimerEl.classList.add("hidden");
   actionBar.innerHTML = "";
   playerNameInput.focus();
 }
@@ -237,12 +240,17 @@ function renderTimer() {
   const endsAt = state.room?.currentGame?.phaseEndsAt;
   if (!state.room?.currentGame || state.room.phase === "lobby" || state.room.phase === "result" || !endsAt) {
     timerEl.textContent = "--:--";
+    mastTimerEl.textContent = "--:--";
+    mastTimerEl.classList.add("hidden");
     return;
   }
 
   const tick = () => {
-    timerEl.textContent = formatTimer(Number(endsAt) - Date.now());
+    const value = formatTimer(Number(endsAt) - Date.now());
+    timerEl.textContent = value;
+    mastTimerEl.textContent = value;
   };
+  mastTimerEl.classList.remove("hidden");
   tick();
   state.timerHandle = setInterval(tick, 500);
 }

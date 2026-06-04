@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>워드울프</title>
-    <link rel="stylesheet" href="styles.css?v=20260604-ready-chat" />
+    <link rel="stylesheet" href="styles.css?v=20260604-status-timer" />
   </head>
   <body>
     <main class="shell">
@@ -14,6 +14,7 @@
           <h1>워드울프</h1>
         </div>
         <div class="mast-actions">
+          <div class="timer mast-timer hidden" id="mastTimer">--:--</div>
           <div class="room-badge" id="roomBadge">대기 중</div>
           <button class="leave-room hidden" id="leaveRoomBtn" type="button">나가기</button>
         </div>
@@ -44,9 +45,10 @@
 
         <section class="play-panel">
           <div class="status-row">
-            <div>
+            <div class="status-copy">
               <p class="label">진행 상태</p>
               <h2 id="phaseTitle">대기실</h2>
+              <div class="message" id="message"></div>
             </div>
             <div class="timer" id="timer">--:--</div>
           </div>
@@ -70,7 +72,6 @@
           </section>
 
           <div class="action-bar" id="actionBar"></div>
-          <div class="message" id="message"></div>
 
           <section class="chat-panel">
             <div class="panel-head">
@@ -89,6 +90,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="app.js?v=20260604-ready-chat" type="module"></script>
+    <script src="app.js?v=20260604-status-timer" type="module"></script>
   </body>
 </html>

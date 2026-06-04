@@ -290,6 +290,14 @@ input:focus {
 
 .status-row {
   min-height: 50px;
+  align-items: stretch;
+}
+
+.status-copy {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 2px;
 }
 
 .players {
@@ -381,6 +389,13 @@ input:focus {
   box-shadow:
     0 0 26px rgba(244, 195, 95, 0.34),
     inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.mast-timer {
+  min-height: 36px;
+  min-width: 72px;
+  padding: 7px 10px;
+  font-size: 15px;
 }
 
 .secret-card {
@@ -495,12 +510,13 @@ input:focus {
 }
 
 .message {
-  min-height: 18px;
-  margin-top: 7px;
+  min-height: 15px;
+  margin-top: 0;
   color: var(--muted);
-  line-height: 1.45;
-  font-size: 12px;
-  white-space: pre-line;
+  line-height: 1.25;
+  font-size: 11px;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .chat-log {
@@ -593,7 +609,7 @@ input:focus {
   }
 
   .room-badge {
-    max-width: 42vw;
+    max-width: 34vw;
     padding: 6px 8px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -603,6 +619,13 @@ input:focus {
 
   .mast-actions {
     gap: 6px;
+  }
+
+  .mast-timer {
+    min-height: 32px;
+    min-width: 58px;
+    padding: 6px 7px;
+    font-size: 12px;
   }
 
   .leave-room {
