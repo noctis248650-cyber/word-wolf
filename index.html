@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>워드울프</title>
-    <link rel="stylesheet" href="styles.css?v=20260604-wolf-guess-alert" />
+    <link rel="stylesheet" href="styles.css?v=20260604-room-lobby" />
   </head>
   <body>
     <main class="shell">
@@ -21,21 +21,55 @@
       </section>
 
       <section class="join-panel" id="entryPanel">
-        <div class="field">
-          <label for="playerName">아이디</label>
-          <input id="playerName" maxlength="16" placeholder="예: Hyuk" autocomplete="nickname" />
-        </div>
-        <div class="field avatar-field">
-          <span class="field-label">아이콘</span>
-          <div class="avatar-choices" id="avatarChoices"></div>
-        </div>
-        <div class="join-grid">
-          <button id="createRoomBtn" class="primary">방 만들기</button>
-          <div class="join-code">
-            <input id="roomCode" maxlength="5" placeholder="방 코드" />
-            <button id="joinRoomBtn">입장</button>
+        <section class="profile-step" id="profileStep">
+          <div class="entry-grid">
+            <div class="field">
+              <label for="playerName">아이디</label>
+              <input id="playerName" maxlength="16" placeholder="예: Hyuk" autocomplete="nickname" />
+            </div>
+            <div class="field avatar-field">
+              <span class="field-label">아이콘</span>
+              <div class="avatar-choices" id="avatarChoices"></div>
+            </div>
           </div>
-        </div>
+          <button id="enterLobbyBtn" class="primary entry-submit" type="button">입장하기</button>
+        </section>
+
+        <section class="lobby-step hidden" id="lobbyStep">
+          <div class="lobby-profile">
+            <strong id="profileSummary">프로필 설정 완료</strong>
+            <button id="editProfileBtn" type="button">프로필 변경</button>
+          </div>
+
+          <section class="entry-section">
+            <div class="entry-section-head">
+              <strong>생성된 방</strong>
+              <button id="refreshRoomsBtn" type="button">새로고침</button>
+            </div>
+            <div class="room-list" id="roomList"></div>
+          </section>
+
+          <section class="entry-section">
+            <div class="entry-section-head">
+              <strong>방 만들기</strong>
+            </div>
+            <div class="create-room-grid">
+              <input id="roomTitle" maxlength="24" placeholder="방 제목" />
+              <input id="maxPlayers" type="number" min="3" max="10" value="8" aria-label="최대 인원" />
+              <button id="createRoomBtn" class="primary" type="button">생성</button>
+            </div>
+          </section>
+
+          <section class="entry-section">
+            <div class="entry-section-head">
+              <strong>코드로 입장</strong>
+            </div>
+            <div class="join-code">
+              <input id="roomCode" maxlength="5" placeholder="방 코드" />
+              <button id="joinRoomBtn" type="button">입장</button>
+            </div>
+          </section>
+        </section>
       </section>
 
       <section class="game-layout hidden" id="gamePanel">
@@ -94,6 +128,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="app.js?v=20260604-wolf-guess-alert" type="module"></script>
+    <script src="app.js?v=20260604-room-lobby" type="module"></script>
   </body>
 </html>

@@ -1,8 +1,17 @@
 const entryPanel = document.querySelector("#entryPanel");
 const gamePanel = document.querySelector("#gamePanel");
+const profileStep = document.querySelector("#profileStep");
+const lobbyStep = document.querySelector("#lobbyStep");
 const playerNameInput = document.querySelector("#playerName");
 const roomCodeInput = document.querySelector("#roomCode");
+const roomTitleInput = document.querySelector("#roomTitle");
+const maxPlayersInput = document.querySelector("#maxPlayers");
 const avatarChoices = document.querySelector("#avatarChoices");
+const roomListEl = document.querySelector("#roomList");
+const refreshRoomsBtn = document.querySelector("#refreshRoomsBtn");
+const enterLobbyBtn = document.querySelector("#enterLobbyBtn");
+const editProfileBtn = document.querySelector("#editProfileBtn");
+const profileSummary = document.querySelector("#profileSummary");
 const createRoomBtn = document.querySelector("#createRoomBtn");
 const joinRoomBtn = document.querySelector("#joinRoomBtn");
 const roomBadge = document.querySelector("#roomBadge");
@@ -26,6 +35,8 @@ const chatCount = document.querySelector("#chatCount");
 const chatLog = document.querySelector("#chatLog");
 const chatForm = document.querySelector("#chatForm");
 const chatInput = document.querySelector("#chatInput");
+
+roomBadge.dataset.keepDisabled = "true";
 
 const avatars = [
   { id: "img1", src: "img/IMG_2026_06_04_20_25_0001.png", label: "아이콘 1" },
@@ -93,9 +104,13 @@ let state = {
   timerHandle: null,
   busy: false,
   messages: [],
+  rooms: [],
+  profileReady: false,
   selectedAvatar: normalizeAvatarId(localStorage.getItem("wordWolfAvatar")),
   roomBadgeResetHandle: null
 };
+
+playerNameInput.value = localStorage.getItem("wordWolfPlayerName") || "";
 
 function currentPlayer() {
   return state.room?.players.find((player) => player.id === state.playerId) || null;
@@ -169,7 +184,26 @@ function requireName() {
     playerNameInput.focus();
     throw new Error("아이디를 먼저 입력해주세요.");
   }
+  localStorage.setItem("wordWolfPlayerName", name);
   return name;
+}
+
+function requireRoomTitle() {
+  const title = roomTitleInput.value.trim();
+  if (!title) {
+    roomTitleInput.focus();
+    throw new Error("방 제목을 입력해주세요.");
+  }
+  return title;
+}
+
+function requireMaxPlayers() {
+  const maxPlayers = Number(maxPlayersInput.value);
+  if (!Number.isInteger(maxPlayers) || maxPlayers < 3 || maxPlayers > 10) {
+    maxPlayersInput.focus();
+    throw new Error("최대 인원은 3명에서 10명 사이로 설정해주세요.");
+  }
+  return maxPlayers;
 }
 
 function saveSession(room, playerId) {
@@ -196,11 +230,23 @@ function clearSession() {
   leaveRoomBtn.classList.add("hidden");
   roomBadge.textContent = "대기 중";
   roomBadge.disabled = true;
+  roomBadge.dataset.keepDisabled = "true";
   timerEl.textContent = "--:--";
   mastTimerEl.textContent = "--:--";
   mastTimerEl.classList.add("hidden");
   actionBar.innerHTML = "";
-  playerNameInput.focus();
+  renderEntryStep();
+  fetchRooms();
+}
+
+function renderEntryStep() {
+  const name = playerNameInput.value.trim();
+  profileStep.classList.toggle("hidden", state.profileReady);
+  lobbyStep.classList.toggle("hidden", !state.profileReady);
+
+  if (state.profileReady) {
+    profileSummary.textContent = `${name || "플레이어"} · 아이콘 선택 완료`;
+  }
 }
 
 function renderAvatarChoices() {
@@ -218,6 +264,49 @@ function renderAvatarChoices() {
       renderAvatarChoices();
     });
     avatarChoices.append(button);
+  }
+}
+
+function renderRoomList() {
+  roomListEl.innerHTML = "";
+
+  if (!state.rooms.length) {
+    const empty = document.createElement("div");
+    empty.className = "room-list-empty";
+    empty.textContent = "생성된 방이 없어요.";
+    roomListEl.append(empty);
+    return;
+  }
+
+  for (const room of state.rooms) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "room-list-item";
+
+    const title = document.createElement("strong");
+    title.textContent = room.title || `방 ${room.code}`;
+
+    const meta = document.createElement("span");
+    meta.textContent = `${room.playerCount}/${room.maxPlayers}명 · 코드 ${room.code}`;
+
+    button.append(title, meta);
+    button.addEventListener("click", () => joinRoomByCode(room.code));
+    roomListEl.append(button);
+  }
+}
+
+async function fetchRooms() {
+  if (!hasSupabaseConfig || state.room) return;
+
+  try {
+    state.rooms = await rpc("ww_list_rooms");
+    renderRoomList();
+  } catch (error) {
+    roomListEl.innerHTML = "";
+    const empty = document.createElement("div");
+    empty.className = "room-list-empty";
+    empty.textContent = error.message;
+    roomListEl.append(empty);
   }
 }
 
@@ -788,6 +877,7 @@ function render() {
   leaveRoomBtn.classList.remove("hidden");
   roomBadge.textContent = `방 코드 ${room.code}`;
   roomBadge.disabled = false;
+  roomBadge.dataset.keepDisabled = "false";
   roomBadge.title = "방 코드 복사";
   phaseTitle.textContent = phaseLabel(room.phase);
   renderPlayers();
@@ -798,29 +888,61 @@ function render() {
   renderChat();
 }
 
-createRoomBtn.addEventListener("click", () =>
+enterLobbyBtn.addEventListener("click", () =>
   runAction(async () => {
-    const data = await rpc("ww_create_room", { p_name: requireName(), p_avatar: state.selectedAvatar });
-    saveSession(data.room, data.playerId);
-    startPolling();
-    render();
+    requireName();
+    state.profileReady = true;
+    renderEntryStep();
+    await fetchRooms();
   })
 );
 
-joinRoomBtn.addEventListener("click", () =>
+editProfileBtn.addEventListener("click", () => {
+  state.profileReady = false;
+  renderEntryStep();
+  playerNameInput.focus();
+});
+
+playerNameInput.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter") return;
+  event.preventDefault();
+  enterLobbyBtn.click();
+});
+
+createRoomBtn.addEventListener("click", () =>
   runAction(async () => {
-    const code = roomCodeInput.value.trim().toUpperCase();
-    if (!code) throw new Error("방 코드를 입력해주세요.");
-    const data = await rpc("ww_join_room", {
-      p_code: code,
+    const data = await rpc("ww_create_room", {
       p_name: requireName(),
-      p_avatar: state.selectedAvatar
+      p_avatar: state.selectedAvatar,
+      p_title: requireRoomTitle(),
+      p_max_players: requireMaxPlayers()
     });
     saveSession(data.room, data.playerId);
     startPolling();
     render();
   })
 );
+
+async function joinRoomByCode(code) {
+  const data = await rpc("ww_join_room", {
+    p_code: code,
+    p_name: requireName(),
+    p_avatar: state.selectedAvatar
+  });
+  saveSession(data.room, data.playerId);
+  startPolling();
+  render();
+}
+
+joinRoomBtn.addEventListener("click", () =>
+  runAction(async () => {
+    const code = roomCodeInput.value.trim().toUpperCase();
+    if (!code) throw new Error("방 코드를 입력해주세요.");
+    await joinRoomByCode(code);
+  })
+);
+
+refreshRoomsBtn.addEventListener("click", () => fetchRooms());
 
 roomCodeInput.addEventListener("input", () => {
   roomCodeInput.value = roomCodeInput.value.toUpperCase();
@@ -907,12 +1029,16 @@ async function restoreSession() {
     localStorage.removeItem("wordWolfRoomCode");
     localStorage.removeItem("wordWolfPlayerId");
     state.playerId = "";
+    fetchRooms();
   }
 }
 
 if (!hasSupabaseConfig) {
   setMessage("Supabase 설정이 필요해요. supabase-config.js에 Project URL과 anon public key를 넣어주세요.", true);
 } else {
-restoreSession();
-renderAvatarChoices();
+  restoreSession();
+  renderAvatarChoices();
+  renderEntryStep();
+  fetchRooms();
+  setInterval(fetchRooms, 5000);
 }
