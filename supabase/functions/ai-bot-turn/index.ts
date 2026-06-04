@@ -4,13 +4,14 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS"
 };
 
-type BotAction = "hint" | "vote" | "guess";
+type BotAction = "hint" | "vote" | "guess" | "chat";
 
 type BotTurnRequest = {
   action?: BotAction;
   code?: string;
   hostPlayerId?: string;
   botPlayerId?: string;
+  triggerMessageId?: number;
 };
 
 type Player = {
@@ -39,6 +40,14 @@ type RoomState = {
     viewerWord?: string;
     viewerRole?: "wolf" | "villager";
   } | null;
+};
+
+type Message = {
+  id: number;
+  playerId: string;
+  playerName: string;
+  body: string;
+  createdAt: number;
 };
 
 function jsonResponse(body: unknown, status = 200) {
@@ -173,7 +182,7 @@ function validateRequest(request: BotTurnRequest) {
   if (!request.code || !request.hostPlayerId || !request.botPlayerId || !request.action) {
     throw new Error("AI 요청 정보가 부족해요.");
   }
-  if (!["hint", "vote", "guess"].includes(request.action)) {
+  if (!["hint", "vote", "guess", "chat"].includes(request.action)) {
     throw new Error("지원하지 않는 AI 행동이에요.");
   }
 }
@@ -268,6 +277,35 @@ async function guessWord(room: RoomState, bot: Player, messages: Array<{ playerN
   return cleanShortText(generated, "모르겠음", 30);
 }
 
+async function makeChatReply(room: RoomState, bot: Player, messages: Message[], triggerMessageId?: number) {
+  const triggerMessage = messages.find((message) => message.id === triggerMessageId) || messages[messages.length - 1];
+  if (!triggerMessage) {
+    throw new Error("답변할 채팅이 없어요.");
+  }
+  if (triggerMessage.playerId === bot.id) {
+    throw new Error("자기 메시지에는 답하지 않아요.");
+  }
+
+  const prompt = [
+    `너는 워드울프 게임에 참여 중인 AI 플레이어 "${bot.name}"이다.`,
+    `현재 단계: ${room.phase}`,
+    `네 단어: ${room.currentGame?.viewerWord || "게임 시작 전"}`,
+    `네 역할: ${room.currentGame?.viewerRole === "wolf" ? "울프" : room.currentGame?.viewerRole === "villager" ? "시민" : "대기 중"}`,
+    "친구 채팅방처럼 짧고 자연스럽게 답해라.",
+    "정답 단어를 직접 공개하지 말고, 힌트 단계에서도 너무 노골적인 단어는 피하라.",
+    "출력은 채팅 메시지 한 줄만 작성해라."
+  ].join("\n");
+
+  const context = [
+    `방금 메시지: ${triggerMessage.playerName}: ${triggerMessage.body}`,
+    `힌트:\n${compactHints(room)}`,
+    `최근 채팅:\n${compactMessages(messages)}`
+  ].join("\n\n");
+
+  const generated = await askOpenAI(prompt, context, 90);
+  return cleanShortText(generated, "음... 그럴 수도 있겠네", 90);
+}
+
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -282,10 +320,21 @@ Deno.serve(async (request) => {
     const botPlayerId = body.botPlayerId!;
     const room = await loadBotRoom(code, botPlayerId);
     const bot = validateBotControl(room, hostPlayerId, botPlayerId);
-    const messages = await rpc<Array<{ playerName: string; body: string }>>("ww_get_messages", {
+    const messages = await rpc<Message[]>("ww_get_messages", {
       p_code: code,
       p_player_id: botPlayerId
     });
+
+    if (body.action === "chat") {
+      const reply = await makeChatReply(room, bot, messages, body.triggerMessageId);
+      await rpc<Message[]>("ww_send_message", {
+        p_code: code,
+        p_player_id: bot.id,
+        p_body: reply
+      });
+      const viewerRoom = await loadViewerRoom(code, hostPlayerId);
+      return jsonResponse({ room: viewerRoom, text: reply });
+    }
 
     if (body.action === "hint") {
       const hint = await makeHint(room, bot, messages);

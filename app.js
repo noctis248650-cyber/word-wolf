@@ -83,7 +83,9 @@ let state = {
   selectedAvatar: normalizeAvatarId(localStorage.getItem("wordWolfAvatar")),
   roomBadgeResetHandle: null,
   aiTurnInProgressKey: "",
-  aiTurnFailures: new Set()
+  aiTurnFailures: new Set(),
+  aiChatInProgressKey: "",
+  aiChatRepliedKeys: new Set()
 };
 
 playerNameInput.value = localStorage.getItem("wordWolfPlayerName") || "";
@@ -154,7 +156,7 @@ async function rpc(name, args = {}) {
   return data;
 }
 
-async function runAiBotTurn(action, botPlayerId) {
+async function runAiBotTurn(action, botPlayerId, extraBody = {}) {
   if (!db) throw new Error("Supabase 설정이 필요해요.");
   if (!isHost()) throw new Error("방장만 AI를 실행할 수 있어요.");
 
@@ -163,7 +165,8 @@ async function runAiBotTurn(action, botPlayerId) {
       action,
       code: state.room.code,
       hostPlayerId: state.playerId,
-      botPlayerId
+      botPlayerId,
+      ...extraBody
     }
   });
 
@@ -258,6 +261,55 @@ function scheduleAiTurn() {
   }, 350);
 }
 
+function getLatestHumanMessage() {
+  for (let index = state.messages.length - 1; index >= 0; index -= 1) {
+    const message = state.messages[index];
+    const sender = playerById(message.playerId);
+    if (sender && !sender.isBot) return message;
+  }
+  return null;
+}
+
+function scheduleAiChatReply() {
+  if (!isHost() || !state.room || state.busy || state.aiChatInProgressKey) return;
+
+  const triggerMessage = getLatestHumanMessage();
+  if (!triggerMessage) return;
+
+  const bots = state.room.players.filter((player) => player.isBot);
+  const bot = bots.find((candidate) => !state.aiChatRepliedKeys.has(`${triggerMessage.id}:${candidate.id}`));
+  if (!bot) return;
+
+  const key = `${triggerMessage.id}:${bot.id}`;
+  state.aiChatInProgressKey = key;
+  state.aiChatRepliedKeys.add(key);
+
+  window.setTimeout(() => {
+    if (state.aiChatInProgressKey !== key) return;
+    if (state.busy) {
+      state.aiChatInProgressKey = "";
+      state.aiChatRepliedKeys.delete(key);
+      return;
+    }
+
+    state.busy = true;
+    setButtonsDisabled(true);
+    setMessage(`${bot.name}이 답장하는 중이에요.`);
+
+    runAiBotTurn("chat", bot.id, { triggerMessageId: triggerMessage.id })
+      .then(() => fetchMessages())
+      .catch((error) => {
+        setMessage(error.message, true);
+      })
+      .finally(() => {
+        state.aiChatInProgressKey = "";
+        state.busy = false;
+        setButtonsDisabled(false);
+        window.setTimeout(scheduleAiChatReply, 100);
+      });
+  }, 650);
+}
+
 function requireName() {
   const name = playerNameInput.value.trim();
   if (!name) {
@@ -300,6 +352,10 @@ function clearSession() {
   state.room = null;
   state.playerId = "";
   state.messages = [];
+  state.aiTurnInProgressKey = "";
+  state.aiTurnFailures.clear();
+  state.aiChatInProgressKey = "";
+  state.aiChatRepliedKeys.clear();
   clearTimeout(state.roomBadgeResetHandle);
   state.roomBadgeResetHandle = null;
   localStorage.removeItem("wordWolfRoomCode");
@@ -439,6 +495,7 @@ async function fetchMessages() {
       p_player_id: state.playerId
     });
     renderChat();
+    scheduleAiChatReply();
   } catch {
     // Chat should not interrupt the main game loop.
   }
