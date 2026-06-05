@@ -21,12 +21,12 @@
   --frame-soft: rgba(217, 192, 138, 0.22);
   --shadow: 0 14px 28px rgba(0, 0, 0, 0.2);
   --glow: 0 0 28px rgba(255, 211, 111, 0.24);
-  --ornate: url("../ui-soft/Ornate%2032x32/Alt%20Color/s_ornate_alt_1.png");
-  --ornate-bright: url("../ui-soft/Ornate%2032x32/Alt%20Color/s_ornate_alt_2.png");
-  --ornate-blue: url("../ui-soft/Ornate%2032x32/Alt%20Color/s_ornate_alt_1.png");
-  --wood: url("../ui-soft/Wood%2032x32/Normal/s_wood_norm_1.png");
-  --wood-muted: url("../ui-soft/Wood%2032x32/Desaturated/s_wood_desat_1.png");
-  --dialogue: url("../ui-soft/Dialogue%2032x32/Desaturated/s_dialogue_desat_9.png");
+  --ornate: url("../ui/Ornate%2032x32/Alt%20Color/s_ornate_alt_1.png");
+  --ornate-bright: url("../ui/Ornate%2032x32/Alt%20Color/s_ornate_alt_2.png");
+  --ornate-blue: url("../ui/Ornate%2032x32/Alt%20Color/s_ornate_alt_1.png");
+  --wood: url("../ui/Wood%2032x32/Normal/s_wood_norm_1.png");
+  --wood-muted: url("../ui/Wood%2032x32/Desaturated/s_wood_desat_1.png");
+  --dialogue: url("../ui/Dialogue%2032x32/Desaturated/s_dialogue_desat_9.png");
 }
 
 html {
