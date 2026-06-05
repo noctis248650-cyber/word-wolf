@@ -137,6 +137,21 @@ button:disabled {
   gap: 8px;
 }
 
+.sound-toggle {
+  min-height: 36px;
+  padding: 0 10px;
+  border-color: rgba(36, 214, 181, 0.36);
+  background: rgba(36, 214, 181, 0.1);
+  color: #baf8ed;
+  font-size: 11px;
+}
+
+.sound-toggle.is-muted {
+  border-color: rgba(255, 104, 104, 0.36);
+  background: rgba(255, 104, 104, 0.08);
+  color: #ffd0d0;
+}
+
 .eyebrow,
 .label {
   margin: 0;

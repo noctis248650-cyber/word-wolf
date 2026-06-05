@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>워드울프</title>
-    <link rel="stylesheet" href="styles.css?v=20260604-profile-summary" />
+    <link rel="stylesheet" href="styles.css?v=20260605-audio" />
   </head>
   <body>
     <main class="shell">
@@ -14,6 +14,7 @@
           <h1>워드울프</h1>
         </div>
         <div class="mast-actions">
+          <button class="sound-toggle" id="soundToggleBtn" type="button" aria-pressed="true">사운드 ON</button>
           <div class="timer mast-timer hidden" id="mastTimer">--:--</div>
           <button class="room-badge" id="roomBadge" type="button" disabled>대기 중</button>
           <button class="leave-room hidden" id="leaveRoomBtn" type="button">나가기</button>
@@ -132,6 +133,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="app.js?v=20260604-profile-summary" type="module"></script>
+    <script src="app.js?v=20260605-audio" type="module"></script>
   </body>
 </html>

@@ -17,6 +17,7 @@ const createRoomBtn = document.querySelector("#createRoomBtn");
 const joinRoomBtn = document.querySelector("#joinRoomBtn");
 const roomBadge = document.querySelector("#roomBadge");
 const leaveRoomBtn = document.querySelector("#leaveRoomBtn");
+const soundToggleBtn = document.querySelector("#soundToggleBtn");
 const playerCount = document.querySelector("#playerCount");
 const playersEl = document.querySelector("#players");
 const phaseTitle = document.querySelector("#phaseTitle");
@@ -70,6 +71,36 @@ const hasSupabaseConfig =
 
 const db = hasSupabaseConfig ? window.supabase.createClient(config.url, config.anonKey) : null;
 
+const audioSources = {
+  bgm: [
+    "AUDIO/bgm_city_pop_1.mp3",
+    "AUDIO/bgm_city_pop_2.mp3",
+    "AUDIO/bgm_modern_city_pop_1.mp3",
+    "AUDIO/bgm_modern_city_pop_2.mp3",
+    "AUDIO/bgm_synth_pop_1.mp3",
+    "AUDIO/bgm_synth_pop_2.mp3"
+  ],
+  button: "AUDIO/button_sound.wav",
+  chat: "AUDIO/chat_sound.wav",
+  phase: "AUDIO/phase_change.mp3",
+  result: "AUDIO/result.wav"
+};
+
+const audioPlayers = {
+  bgm: new Audio(),
+  button: new Audio(audioSources.button),
+  chat: new Audio(audioSources.chat),
+  phase: new Audio(audioSources.phase),
+  result: new Audio(audioSources.result)
+};
+
+audioPlayers.bgm.volume = 0.18;
+audioPlayers.button.volume = 0.32;
+audioPlayers.chat.volume = 0.34;
+audioPlayers.phase.volume = 0.42;
+audioPlayers.result.volume = 0.48;
+audioPlayers.bgm.addEventListener("ended", () => playNextBgm());
+
 let state = {
   room: null,
   playerId: localStorage.getItem("wordWolfPlayerId") || "",
@@ -87,10 +118,94 @@ let state = {
   aiChatInProgressKey: "",
   aiChatRepliedKeys: new Set(),
   aiChatGeneralRepliedIds: new Set(),
-  aiChatGeneralIndex: 0
+  aiChatGeneralIndex: 0,
+  soundEnabled: localStorage.getItem("wordWolfSoundEnabled") !== "false",
+  audioUnlocked: false,
+  bgmIndex: Math.floor(Math.random() * audioSources.bgm.length),
+  lastPhaseAudioKey: "",
+  chatSoundInitialized: false,
+  seenMessageSoundIds: new Set()
 };
 
 playerNameInput.value = localStorage.getItem("wordWolfPlayerName") || "";
+
+function updateSoundToggle() {
+  if (!soundToggleBtn) return;
+  soundToggleBtn.textContent = state.soundEnabled ? "사운드 ON" : "사운드 OFF";
+  soundToggleBtn.classList.toggle("is-muted", !state.soundEnabled);
+  soundToggleBtn.setAttribute("aria-pressed", String(state.soundEnabled));
+}
+
+function playNextBgm() {
+  if (!state.soundEnabled || !state.audioUnlocked || !audioSources.bgm.length) return;
+
+  audioPlayers.bgm.src = audioSources.bgm[state.bgmIndex % audioSources.bgm.length];
+  state.bgmIndex = (state.bgmIndex + 1) % audioSources.bgm.length;
+  audioPlayers.bgm.play().catch(() => {
+    // Browsers can reject playback until the first trusted user gesture.
+  });
+}
+
+function unlockAudio() {
+  if (state.audioUnlocked) return;
+  state.audioUnlocked = true;
+  if (state.soundEnabled) playNextBgm();
+}
+
+function playSfx(name) {
+  if (!state.soundEnabled || !state.audioUnlocked) return;
+  const player = audioPlayers[name];
+  if (!player) return;
+
+  player.pause();
+  player.currentTime = 0;
+  player.play().catch(() => {
+    // Effect sounds should never interrupt gameplay if playback is blocked.
+  });
+}
+
+function setSoundEnabled(enabled) {
+  state.soundEnabled = enabled;
+  localStorage.setItem("wordWolfSoundEnabled", String(enabled));
+  updateSoundToggle();
+
+  if (enabled) {
+    unlockAudio();
+    if (audioPlayers.bgm.paused) playNextBgm();
+  } else {
+    audioPlayers.bgm.pause();
+  }
+}
+
+function messageSoundId(message) {
+  return String(message.id || `${message.playerId}:${message.createdAt || ""}:${message.body || ""}`);
+}
+
+function trackChatSound() {
+  const ids = state.messages.map(messageSoundId);
+
+  if (!state.chatSoundInitialized) {
+    ids.forEach((id) => state.seenMessageSoundIds.add(id));
+    state.chatSoundInitialized = true;
+    return;
+  }
+
+  const hasNewMessage = ids.some((id) => !state.seenMessageSoundIds.has(id));
+  ids.forEach((id) => state.seenMessageSoundIds.add(id));
+  if (hasNewMessage) playSfx("chat");
+}
+
+function trackPhaseSound(room) {
+  const phaseKey = `${room.code}:${room.round || 0}:${room.phase}`;
+  if (!state.lastPhaseAudioKey) {
+    state.lastPhaseAudioKey = phaseKey;
+    return;
+  }
+  if (state.lastPhaseAudioKey === phaseKey) return;
+
+  state.lastPhaseAudioKey = phaseKey;
+  playSfx(room.phase === "result" ? "result" : "phase");
+}
 
 function currentPlayer() {
   return state.room?.players.find((player) => player.id === state.playerId) || null;
@@ -376,6 +491,9 @@ function requireMaxPlayers() {
 function saveSession(room, playerId) {
   state.room = room;
   state.playerId = playerId;
+  state.lastPhaseAudioKey = `${room.code}:${room.round || 0}:${room.phase}`;
+  state.chatSoundInitialized = false;
+  state.seenMessageSoundIds.clear();
   localStorage.setItem("wordWolfRoomCode", room.code);
   localStorage.setItem("wordWolfPlayerId", playerId);
 }
@@ -393,6 +511,9 @@ function clearSession() {
   state.aiChatRepliedKeys.clear();
   state.aiChatGeneralRepliedIds.clear();
   state.aiChatGeneralIndex = 0;
+  state.lastPhaseAudioKey = "";
+  state.chatSoundInitialized = false;
+  state.seenMessageSoundIds.clear();
   clearTimeout(state.roomBadgeResetHandle);
   state.roomBadgeResetHandle = null;
   localStorage.removeItem("wordWolfRoomCode");
@@ -768,6 +889,7 @@ function renderHintPanel() {
 
 function renderChat() {
   if (chatCount) chatCount.textContent = "";
+  trackChatSound();
   chatLog.innerHTML = "";
 
   if (!state.messages.length) {
@@ -1021,6 +1143,7 @@ function renderActions() {
 function render() {
   const room = state.room;
   if (!room) return;
+  trackPhaseSound(room);
 
   entryPanel.classList.add("hidden");
   gamePanel.classList.remove("hidden");
@@ -1038,6 +1161,23 @@ function render() {
   renderChat();
   scheduleAiTurn();
 }
+
+updateSoundToggle();
+
+document.addEventListener("pointerdown", unlockAudio, { once: true });
+document.addEventListener("keydown", unlockAudio, { once: true });
+document.addEventListener(
+  "click",
+  (event) => {
+    const button = event.target.closest?.("button");
+    if (button && !button.disabled) playSfx("button");
+  },
+  true
+);
+
+soundToggleBtn?.addEventListener("click", () => {
+  setSoundEnabled(!state.soundEnabled);
+});
 
 enterLobbyBtn.addEventListener("click", () =>
   runAction(async () => {
