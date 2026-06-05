@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>워드울프 V2</title>
     <link rel="stylesheet" href="../styles.css?v=20260605-font" />
-    <link rel="stylesheet" href="styles.css?v=20260605-hide-category" />
+    <link rel="stylesheet" href="styles.css?v=20260605-room-options" />
   </head>
   <body>
     <main class="shell">
@@ -69,7 +69,6 @@
             </div>
             <div class="create-room-grid">
               <input id="roomTitle" maxlength="24" placeholder="방 제목" />
-              <input id="maxPlayers" type="number" min="3" max="10" value="8" aria-label="최대 인원" />
               <label class="secret-room-toggle" for="privateRoom">
                 <input id="privateRoom" type="checkbox" />
                 <span>비밀방</span>
@@ -150,6 +149,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase-config.js"></script>
-    <script src="app.js?v=20260605-wolf-guess-input" type="module"></script>
+    <script src="app.js?v=20260605-room-options" type="module"></script>
   </body>
 </html>

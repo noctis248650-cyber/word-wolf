@@ -5,7 +5,6 @@ const lobbyStep = document.querySelector("#lobbyStep");
 const playerNameInput = document.querySelector("#playerName");
 const roomCodeInput = document.querySelector("#roomCode");
 const roomTitleInput = document.querySelector("#roomTitle");
-const maxPlayersInput = document.querySelector("#maxPlayers");
 const privateRoomInput = document.querySelector("#privateRoom");
 const hideCategoryInput = document.querySelector("#hideCategory");
 const avatarChoices = document.querySelector("#avatarChoices");
@@ -524,15 +523,6 @@ function requireRoomTitle() {
     throw new Error("방 제목을 입력해주세요.");
   }
   return title;
-}
-
-function requireMaxPlayers() {
-  const maxPlayers = Number(maxPlayersInput.value);
-  if (!Number.isInteger(maxPlayers) || maxPlayers < 3 || maxPlayers > 10) {
-    maxPlayersInput.focus();
-    throw new Error("최대 인원은 3명에서 10명 사이로 설정해주세요.");
-  }
-  return maxPlayers;
 }
 
 function saveSession(room, playerId) {
@@ -1287,7 +1277,7 @@ createRoomBtn.addEventListener("click", () =>
       p_name: requireName(),
       p_avatar: state.selectedAvatar,
       p_title: requireRoomTitle(),
-      p_max_players: requireMaxPlayers(),
+      p_max_players: 8,
       p_is_private: privateRoomInput.checked,
       p_hide_category: hideCategoryInput.checked
     });
