@@ -18,6 +18,12 @@
   --glow: 0 0 28px rgba(36, 214, 181, 0.2);
 }
 
+@font-face {
+  font-family: "DNF Bit Bit";
+  src: url("FONT/DNFBitBitv2.ttf") format("truetype");
+  font-display: swap;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -32,7 +38,7 @@ body {
   color: var(--ink);
   font-size: 13px;
   font-family:
-    Inter, Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    "DNF Bit Bit", Inter, Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   background: #061025;
   overflow-x: hidden;
 }
