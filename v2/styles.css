@@ -346,7 +346,7 @@ h2 {
   background:
     linear-gradient(180deg, #593212, #130a06),
     #130a06;
-  color: #fff0a8;
+  color: #d89419;
   padding: 0 10px;
   text-align: center;
   font: inherit;
@@ -355,7 +355,7 @@ h2 {
   line-height: 1;
   letter-spacing: 0;
   box-shadow:
-    0 0 18px rgba(255, 195, 80, 0.34),
+    0 0 20px rgba(216, 148, 25, 0.42),
     0 2px 0 rgba(0, 0, 0, 0.2);
 }
 
