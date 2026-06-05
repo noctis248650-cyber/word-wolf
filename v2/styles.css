@@ -162,6 +162,22 @@ h1 {
     0 12px 20px rgba(0, 0, 0, 0.45);
 }
 
+.title-mark {
+  display: block;
+  line-height: 0;
+}
+
+.title-logo {
+  display: block;
+  width: clamp(190px, 26vw, 330px);
+  max-height: 72px;
+  object-fit: contain;
+  object-position: left center;
+  filter:
+    drop-shadow(0 4px 0 rgba(42, 25, 11, 0.58))
+    drop-shadow(0 0 14px rgba(255, 211, 111, 0.28));
+}
+
 h2 {
   color: #fff7d8;
   font-size: 19px;
@@ -810,8 +826,14 @@ input:focus {
   }
 
   .avatar-choices {
-    grid-template-columns: repeat(2, 130px);
+    grid-template-columns: repeat(4, 68px);
     justify-content: start;
+    gap: 6px;
+  }
+
+  .avatar-choice {
+    min-height: 0;
+    padding: 3px;
   }
 
   .game-layout {
