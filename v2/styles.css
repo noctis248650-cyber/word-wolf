@@ -459,15 +459,26 @@ input:focus {
 }
 
 .avatar-choices {
-  grid-template-columns: repeat(7, minmax(42px, 1fr));
+  grid-template-columns: repeat(8, minmax(48px, 1fr));
+  width: 100%;
+  max-width: 100%;
 }
 
 .avatar-choice {
   position: relative;
+  min-width: 0;
   border-image-source: var(--wood-muted);
   background: linear-gradient(180deg, rgba(59, 75, 100, 0.78), rgba(17, 25, 39, 0.82));
-  padding: 4px;
+  padding: 2px;
   isolation: isolate;
+}
+
+.avatar-choice-image {
+  border-radius: 2px;
+}
+
+.avatar-choice-image img {
+  object-position: center;
 }
 
 .avatar-choice.selected {
@@ -486,7 +497,7 @@ input:focus {
 .avatar-choice.selected::before {
   content: "";
   position: absolute;
-  inset: 5px;
+  inset: 4px;
   border: 1px solid rgba(255, 238, 166, 0.86);
   pointer-events: none;
   z-index: 1;
@@ -1029,14 +1040,16 @@ input:focus {
   }
 
   .avatar-choices {
-    grid-template-columns: repeat(4, 68px);
+    grid-template-columns: repeat(4, clamp(68px, 18vw, 76px));
     justify-content: start;
-    gap: 6px;
+    column-gap: clamp(10px, 4.4vw, 18px);
+    row-gap: 8px;
   }
 
   .avatar-choice {
+    width: 100%;
     min-height: 0;
-    padding: 3px;
+    padding: 2px;
   }
 
   .game-layout {
