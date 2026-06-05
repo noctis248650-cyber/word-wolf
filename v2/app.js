@@ -140,7 +140,9 @@ let state = {
   bgmIndex: Math.floor(Math.random() * audioSources.bgm.length),
   lastPhaseAudioKey: "",
   chatSoundInitialized: false,
-  seenMessageSoundIds: new Set()
+  seenMessageSoundIds: new Set(),
+  wolfGuessDraftKey: "",
+  wolfGuessDraft: ""
 };
 
 playerNameInput.value = localStorage.getItem("wordWolfPlayerName") || "";
@@ -1096,11 +1098,21 @@ function renderWolfGuessActions() {
   const active = playerById(state.room.currentGame?.activePlayerId);
 
   if (isActivePlayer()) {
+    const draftKey = `${state.room.code}:${state.room.round}:${state.playerId}`;
+    if (state.wolfGuessDraftKey !== draftKey) {
+      state.wolfGuessDraftKey = draftKey;
+      state.wolfGuessDraft = "";
+    }
+
     const form = document.createElement("form");
     form.className = "hint-form";
 
     const input = document.createElement("input");
     input.maxLength = 40;
+    input.value = state.wolfGuessDraft;
+    input.addEventListener("input", () => {
+      state.wolfGuessDraft = input.value;
+    });
     input.placeholder = "시민 단어 입력";
 
     const submit = document.createElement("button");
@@ -1115,8 +1127,9 @@ function renderWolfGuessActions() {
         state.room = await rpc("ww_submit_wolf_guess", {
           p_code: state.room.code,
           p_player_id: state.playerId,
-          p_guess: input.value.trim()
+          p_guess: state.wolfGuessDraft.trim()
         });
+        state.wolfGuessDraft = "";
         render();
       });
     });
@@ -1173,7 +1186,14 @@ function renderResultActions() {
 }
 
 function renderActions() {
+  const stableWolfGuessKey =
+    state.room.phase === "wolf_guess" && isActivePlayer()
+      ? `wolf_guess:${state.room.code}:${state.room.round}:${state.playerId}`
+      : "";
+  if (stableWolfGuessKey && actionBar.dataset.renderKey === stableWolfGuessKey) return;
+
   clearActions();
+  actionBar.dataset.renderKey = stableWolfGuessKey;
   const renderByPhase = {
     lobby: renderLobbyActions,
     reveal: renderRevealActions,
