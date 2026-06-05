@@ -905,8 +905,52 @@ input:focus {
 
 .vote-row {
   width: 100%;
-  background: rgba(255, 255, 255, 0.055);
-  padding: 0 12px;
+  min-height: 40px;
+  padding: 0 10px 0 12px;
+  border-color: rgba(244, 195, 95, 0.42);
+  background:
+    linear-gradient(90deg, rgba(244, 195, 95, 0.18), rgba(255, 104, 104, 0.1)),
+    rgba(255, 255, 255, 0.06);
+  color: #fff4ca;
+  box-shadow:
+    0 0 18px rgba(244, 195, 95, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.vote-row::after {
+  content: "선택";
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border: 1px solid rgba(244, 195, 95, 0.44);
+  border-radius: 999px;
+  background: rgba(244, 195, 95, 0.14);
+  color: #ffe58a;
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.vote-row:hover:not(:disabled) {
+  border-color: rgba(244, 195, 95, 0.9);
+  background:
+    linear-gradient(90deg, rgba(244, 195, 95, 0.3), rgba(255, 104, 104, 0.16)),
+    rgba(255, 255, 255, 0.075);
+  box-shadow:
+    0 0 24px rgba(244, 195, 95, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.vote-row:disabled {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--muted);
+  box-shadow: none;
+}
+
+.vote-row:disabled::after {
+  content: "완료";
+  border-color: rgba(120, 168, 255, 0.24);
+  background: rgba(120, 168, 255, 0.1);
+  color: var(--muted);
 }
 
 .message {
