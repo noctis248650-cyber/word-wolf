@@ -337,6 +337,8 @@ h2 {
 .timer {
   min-width: 84px;
   white-space: nowrap;
+  display: inline-grid;
+  place-items: center;
   border: 8px solid transparent;
   border-image-source: var(--ornate-bright);
   border-image-slice: 8 fill;
@@ -345,11 +347,12 @@ h2 {
     linear-gradient(180deg, #593212, #130a06),
     #130a06;
   color: #fff0a8;
-  padding: 7px 10px;
+  padding: 0 10px;
   text-align: center;
-  font-family: "Cascadia Mono", "Consolas", "Arial Black", monospace;
-  font-size: 19px;
+  font: inherit;
+  font-size: 17px;
   font-variant-numeric: tabular-nums;
+  line-height: 1;
   letter-spacing: 0;
   box-shadow:
     0 0 18px rgba(255, 195, 80, 0.34),
@@ -840,8 +843,14 @@ input:focus {
 }
 
 .hint-form.is-live input {
+  background:
+    linear-gradient(180deg, rgba(249, 234, 196, 1), rgba(224, 190, 137, 0.98)),
+    #ead2ad;
+  color: #25180d;
+  -webkit-text-fill-color: #25180d;
+  caret-color: #0d6d5f;
   font-size: 15px;
-  filter: brightness(1.08);
+  filter: none;
   box-shadow:
     0 0 0 3px rgba(127, 255, 227, 0.26),
     0 0 26px rgba(127, 255, 227, 0.5),
@@ -853,17 +862,24 @@ input:focus {
   color: #0d6d5f;
   opacity: 1;
   font-size: 14px;
+  -webkit-text-fill-color: #0d6d5f;
   animation: hint-placeholder-flash 0.82s ease-in-out infinite;
 }
 
 @keyframes hint-input-pulse {
   0%,
   100% {
-    filter: brightness(1.04);
+    box-shadow:
+      0 0 0 3px rgba(127, 255, 227, 0.26),
+      0 0 22px rgba(127, 255, 227, 0.42),
+      inset 0 2px 5px rgba(69, 43, 18, 0.25);
   }
 
   50% {
-    filter: brightness(1.18);
+    box-shadow:
+      0 0 0 3px rgba(255, 211, 111, 0.28),
+      0 0 30px rgba(255, 211, 111, 0.5),
+      inset 0 2px 5px rgba(69, 43, 18, 0.25);
   }
 }
 
@@ -1061,7 +1077,7 @@ input:focus {
   .mast-timer {
     min-width: 72px;
     padding: 0 9px;
-    font-size: 15px;
+    font-size: 13px;
     white-space: nowrap;
   }
 
