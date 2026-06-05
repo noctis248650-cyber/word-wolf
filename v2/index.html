@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>워드울프 V2</title>
+    <link rel="stylesheet" href="../styles.css?v=20260605-audio" />
+    <link rel="stylesheet" href="styles.css?v=20260605-scrabble-go" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="mast">
+        <div>
+          <p class="eyebrow">Bright mobile party game</p>
+          <h1>워드울프 V2</h1>
+        </div>
+        <div class="mast-actions">
+          <div class="sound-menu" id="soundMenu">
+            <button class="sound-toggle" id="soundToggleBtn" type="button" aria-expanded="false">사운드</button>
+            <div class="sound-popover hidden" id="soundPanel">
+              <div class="sound-row">
+                <span>BGM</span>
+                <strong id="bgmVolumeValue">18%</strong>
+              </div>
+              <input class="sound-slider" id="bgmVolumeInput" type="range" min="0" max="100" step="1" value="18" aria-label="BGM 볼륨" />
+              <button class="sound-mute" id="soundMuteBtn" type="button">전체 사운드 끄기</button>
+            </div>
+          </div>
+          <div class="timer mast-timer hidden" id="mastTimer">--:--</div>
+          <button class="room-badge" id="roomBadge" type="button" disabled>대기 중</button>
+          <button class="leave-room hidden" id="leaveRoomBtn" type="button">나가기</button>
+        </div>
+      </section>
+
+      <section class="join-panel" id="entryPanel">
+        <section class="profile-step" id="profileStep">
+          <div class="entry-grid">
+            <div class="field">
+              <label for="playerName">아이디</label>
+              <input id="playerName" maxlength="16" placeholder="예: Hyuk" autocomplete="nickname" />
+            </div>
+            <div class="field avatar-field">
+              <span class="field-label">아이콘</span>
+              <div class="avatar-choices" id="avatarChoices"></div>
+            </div>
+          </div>
+          <button id="enterLobbyBtn" class="primary entry-submit" type="button">입장하기</button>
+        </section>
+
+        <section class="lobby-step hidden" id="lobbyStep">
+          <div class="lobby-profile">
+            <strong id="profileSummary">프로필 설정 완료</strong>
+            <button id="editProfileBtn" type="button">프로필 변경</button>
+          </div>
+
+          <section class="entry-section">
+            <div class="entry-section-head">
+              <strong>생성된 방</strong>
+              <button id="refreshRoomsBtn" type="button">새로고침</button>
+            </div>
+            <div class="room-list" id="roomList"></div>
+          </section>
+
+          <section class="entry-section">
+            <div class="entry-section-head">
+              <strong>방 만들기</strong>
+            </div>
+            <div class="create-room-grid">
+              <input id="roomTitle" maxlength="24" placeholder="방 제목" />
+              <input id="maxPlayers" type="number" min="3" max="10" value="8" aria-label="최대 인원" />
+              <label class="secret-room-toggle" for="privateRoom">
+                <input id="privateRoom" type="checkbox" />
+                <span>비밀방</span>
+              </label>
+              <button id="createRoomBtn" class="primary" type="button">생성</button>
+            </div>
+          </section>
+
+          <section class="entry-section">
+            <div class="entry-section-head">
+              <strong>코드로 입장</strong>
+            </div>
+            <div class="join-code">
+              <input id="roomCode" maxlength="5" placeholder="방 코드" />
+              <button id="joinRoomBtn" type="button">입장</button>
+            </div>
+          </section>
+        </section>
+      </section>
+
+      <section class="game-layout hidden" id="gamePanel">
+        <aside class="side-panel">
+          <div class="panel-head">
+            <span>플레이어</span>
+            <strong id="playerCount">0명</strong>
+          </div>
+          <div id="players" class="players"></div>
+        </aside>
+
+        <section class="play-panel">
+          <div class="status-row">
+            <div class="status-copy">
+              <p class="label">진행 상태</p>
+              <h2 id="phaseTitle">대기실</h2>
+              <div class="message" id="message"></div>
+            </div>
+            <div class="timer status-timer hidden" id="timer">--:--</div>
+          </div>
+
+          <div class="secret-card" id="secretCard">
+            <p class="label">내 단어</p>
+            <strong id="secretWord">게임 시작 전</strong>
+            <span id="categoryText">방장이 시작하면 각자 다른 화면에 비밀 단어가 표시돼요.</span>
+          </div>
+
+          <section class="hint-panel" id="hintPanel">
+            <div class="panel-head">
+              <span>힌트 제출</span>
+              <strong id="activeHintPlayer">대기</strong>
+            </div>
+            <div class="hint-list" id="hintList"></div>
+            <form class="hint-form" id="hintForm">
+              <input id="hintInput" maxlength="50" placeholder="30초 안에 짧은 힌트 제출" />
+              <button type="submit">힌트</button>
+            </form>
+          </section>
+
+          <div class="action-bar" id="actionBar"></div>
+
+          <section class="chat-panel">
+            <div class="panel-head">
+              <span>채팅</span>
+              <strong class="hidden" id="chatCount"></strong>
+            </div>
+            <div class="chat-log" id="chatLog"></div>
+            <form class="chat-form" id="chatForm">
+              <input id="chatInput" maxlength="120" placeholder="단어를 직접 말하지 말고 설명해보세요" />
+              <button type="submit">전송</button>
+            </form>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase-config.js"></script>
+    <script src="app.js?v=20260605-scrabble-go" type="module"></script>
+  </body>
+</html>
