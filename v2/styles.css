@@ -28,6 +28,7 @@
 
 html {
   background: #07111f;
+  font-synthesis: none;
 }
 
 body {
@@ -35,6 +36,11 @@ body {
   background:
     linear-gradient(180deg, rgba(3, 7, 15, 0.08), rgba(3, 7, 15, 0.7)),
     #07111f;
+}
+
+body,
+body * {
+  font-weight: 400 !important;
 }
 
 body::before {
@@ -69,7 +75,6 @@ button {
   background: linear-gradient(180deg, #66543e, #30251c);
   color: #fff4cf;
   cursor: pointer;
-  font-weight: 950;
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
   box-shadow:
     0 5px 0 rgba(0, 0, 0, 0.32),
@@ -143,7 +148,6 @@ button:disabled {
 .label {
   color: #d7c38d;
   font-size: 10px;
-  font-weight: 950;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -236,7 +240,6 @@ h2 {
   padding: 7px 9px;
   text-align: center;
   font-size: 17px;
-  font-weight: 950;
   text-shadow:
     0 0 10px rgba(255, 211, 111, 0.9),
     0 2px 0 rgba(0, 0, 0, 0.65);
@@ -441,7 +444,6 @@ input:focus {
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(255, 211, 111, 0.28);
   color: #fff3c2;
-  font-weight: 950;
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.42);
 }
 
@@ -485,10 +487,6 @@ input:focus {
 .player-avatar {
   width: 26px;
   height: 26px;
-}
-
-.player-name {
-  font-weight: 950;
 }
 
 .tag {
