@@ -141,7 +141,8 @@ let state = {
   chatSoundInitialized: false,
   seenMessageSoundIds: new Set(),
   wolfGuessDraftKey: "",
-  wolfGuessDraft: ""
+  wolfGuessDraft: "",
+  scrollTopOnNextRender: false
 };
 
 playerNameInput.value = localStorage.getItem("wordWolfPlayerName") || "";
@@ -529,10 +530,21 @@ function saveSession(room, playerId) {
   state.room = room;
   state.playerId = playerId;
   state.lastPhaseAudioKey = `${room.code}:${room.round || 0}:${room.phase}`;
+  state.scrollTopOnNextRender = true;
   state.chatSoundInitialized = false;
   state.seenMessageSoundIds.clear();
   localStorage.setItem("wordWolfRoomCode", room.code);
   localStorage.setItem("wordWolfPlayerId", playerId);
+}
+
+function consumeScrollTopRequest() {
+  if (!state.scrollTopOnNextRender) return;
+  state.scrollTopOnNextRender = false;
+  window.requestAnimationFrame(() => {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  });
 }
 
 function clearSession() {
@@ -1215,6 +1227,7 @@ function render() {
   renderTimer();
   renderActions();
   renderChat();
+  consumeScrollTopRequest();
   scheduleAiTurn();
 }
 
@@ -1387,6 +1400,7 @@ async function restoreSession() {
       p_code: code,
       p_player_id: state.playerId
     });
+    state.scrollTopOnNextRender = true;
     startPolling();
     render();
   } catch {
