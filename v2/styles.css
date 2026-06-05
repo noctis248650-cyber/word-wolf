@@ -295,7 +295,7 @@ h2 {
 }
 
 .timer {
-  min-width: 78px;
+  min-width: 84px;
   white-space: nowrap;
   border: 8px solid transparent;
   border-image-source: var(--ornate-bright);
@@ -304,12 +304,15 @@ h2 {
   background:
     linear-gradient(180deg, #593212, #130a06),
     #130a06;
-  color: #f0f5ff;
-  padding: 7px 9px;
+  color: #fff0a8;
+  padding: 7px 10px;
   text-align: center;
-  font-size: 17px;
+  font-family: "Cascadia Mono", "Consolas", "Arial Black", monospace;
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
   box-shadow:
-    0 0 14px rgba(255, 195, 80, 0.22),
+    0 0 18px rgba(255, 195, 80, 0.34),
     0 2px 0 rgba(0, 0, 0, 0.2);
 }
 
@@ -720,18 +723,33 @@ input:focus {
   color: #513514;
 }
 
+.hint-item.empty {
+  color: #7a3c08;
+  background:
+    linear-gradient(180deg, rgba(246, 224, 173, 0.98), rgba(203, 160, 86, 0.94)),
+    var(--paper);
+}
+
 .hint-form,
 .chat-form {
   gap: 8px;
 }
 
 .hint-form.is-live input {
+  font-size: 15px;
   filter: brightness(1.08);
   box-shadow:
     0 0 0 3px rgba(127, 255, 227, 0.26),
     0 0 26px rgba(127, 255, 227, 0.5),
     inset 0 2px 5px rgba(69, 43, 18, 0.25);
   animation: hint-input-pulse 1.25s ease-in-out infinite;
+}
+
+.hint-form.is-live input::placeholder {
+  color: #743408;
+  opacity: 1;
+  font-size: 14px;
+  animation: hint-placeholder-flash 0.82s ease-in-out infinite;
 }
 
 @keyframes hint-input-pulse {
@@ -762,6 +780,17 @@ input:focus {
   box-shadow:
     0 3px 0 rgba(0, 0, 0, 0.18),
     0 0 18px rgba(255, 211, 111, 0.22);
+}
+
+@keyframes hint-placeholder-flash {
+  0%,
+  100% {
+    color: #6b3107;
+  }
+
+  50% {
+    color: #d15410;
+  }
 }
 
 .vote-row::after {
@@ -935,9 +964,9 @@ input:focus {
   }
 
   .mast-timer {
-    min-width: 66px;
-    padding: 0 8px;
-    font-size: 12px;
+    min-width: 72px;
+    padding: 0 9px;
+    font-size: 15px;
     white-space: nowrap;
   }
 
