@@ -100,6 +100,7 @@ const audioSources = {
   ],
   button: "../AUDIO/button_sound.wav",
   chat: "../AUDIO/chat_sound.wav",
+  myTurn: "../AUDIO/My_Turn.mp3",
   phase: "../AUDIO/phase_change.mp3",
   result: "../AUDIO/result.wav"
 };
@@ -108,6 +109,7 @@ const audioPlayers = {
   bgm: new Audio(),
   button: new Audio(audioSources.button),
   chat: new Audio(audioSources.chat),
+  myTurn: new Audio(audioSources.myTurn),
   phase: new Audio(audioSources.phase),
   result: new Audio(audioSources.result)
 };
@@ -115,6 +117,7 @@ const audioPlayers = {
 audioPlayers.bgm.volume = savedBgmVolume;
 audioPlayers.button.volume = 0.32;
 audioPlayers.chat.volume = 0.34;
+audioPlayers.myTurn.volume = 0.46;
 audioPlayers.phase.volume = 0.42;
 audioPlayers.result.volume = 0.48;
 audioPlayers.bgm.addEventListener("ended", () => playNextBgm());
@@ -142,6 +145,7 @@ let state = {
   audioUnlocked: false,
   bgmIndex: Math.floor(Math.random() * audioSources.bgm.length),
   lastPhaseAudioKey: "",
+  lastMyTurnSoundKey: "",
   chatSoundInitialized: false,
   seenMessageSoundIds: new Set(),
   wolfGuessDraftKey: "",
@@ -256,6 +260,14 @@ function trackPhaseSound(room) {
 
   state.lastPhaseAudioKey = phaseKey;
   playSfx(room.phase === "result" ? "result" : "phase");
+}
+
+function trackMyHintTurnSound(canSubmit, activeId) {
+  if (!canSubmit || !state.room) return;
+  const turnKey = `${state.room.code}:${state.room.round || 0}:hint:${activeId}`;
+  if (state.lastMyTurnSoundKey === turnKey) return;
+  state.lastMyTurnSoundKey = turnKey;
+  playSfx("myTurn");
 }
 
 function currentPlayer() {
@@ -565,6 +577,7 @@ function clearSession() {
   state.aiChatGeneralRepliedIds.clear();
   state.aiChatGeneralIndex = 0;
   state.lastPhaseAudioKey = "";
+  state.lastMyTurnSoundKey = "";
   state.chatSoundInitialized = false;
   state.seenMessageSoundIds.clear();
   clearTimeout(state.roomBadgeResetHandle);
@@ -938,6 +951,7 @@ function renderHintPanel() {
   hintForm.classList.toggle("hidden", state.room.phase !== "hint");
   hintForm.classList.toggle("is-live", canSubmit);
   hintPanel.classList.toggle("is-my-turn", canSubmit);
+  trackMyHintTurnSound(canSubmit, activeId);
   hintInput.placeholder = canSubmit ? "30초 안에 짧은 힌트 제출" : "내 차례가 되면 입력할 수 있어요";
 }
 
