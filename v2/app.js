@@ -46,13 +46,14 @@ const chatInput = document.querySelector("#chatInput");
 roomBadge.dataset.keepDisabled = "true";
 
 const avatars = [
-  { id: "img1", src: "../img/IMG_2026_06_04_20_25_0001.png", label: "아이콘 1" },
-  { id: "img2", src: "../img/IMG_2026_06_04_20_25_0002.png", label: "아이콘 2" },
-  { id: "img3", src: "../img/IMG_2026_06_04_20_25_0003.png", label: "아이콘 3" },
-  { id: "img4", src: "../img/IMG_2026_06_04_20_25_0004.png", label: "아이콘 4" },
-  { id: "img5", src: "../img/IMG_2026_06_04_20_25_0005.png", label: "아이콘 5" },
-  { id: "img6", src: "../img/IMG_2026_06_04_20_25_0006.png", label: "아이콘 6" },
-  { id: "img7", src: "../img/IMG_2026_06_05_13_11_0001.png", label: "아이콘 7" },
+  { id: "img1", src: "../img/portrait_1.png", label: "아이콘 1" },
+  { id: "img2", src: "../img/portrait_2.png", label: "아이콘 2" },
+  { id: "img3", src: "../img/portrait_3.png", label: "아이콘 3" },
+  { id: "img4", src: "../img/portrait_4.png", label: "아이콘 4" },
+  { id: "img5", src: "../img/portrait_5.png", label: "아이콘 5" },
+  { id: "img6", src: "../img/portrait_6.png", label: "아이콘 6" },
+  { id: "img7", src: "../img/portrait_7.png", label: "아이콘 7" },
+  { id: "img8", src: "../img/portrait_8.png", label: "아이콘 8" },
   { id: "bot", icon: "AI", label: "AI" }
 ];
 
