@@ -33,11 +33,7 @@ body {
   font-size: 13px;
   font-family:
     Inter, Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
-  background:
-    linear-gradient(180deg, rgba(5, 11, 24, 0.18), rgba(5, 11, 24, 0.7)),
-    radial-gradient(circle at 50% 12%, rgba(120, 168, 255, 0.16), transparent 36%),
-    url("img/BG.png") center top / cover fixed no-repeat,
-    #061025;
+  background: #061025;
   overflow-x: hidden;
 }
 
@@ -46,12 +42,22 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -2;
-  background: linear-gradient(180deg, rgba(5, 10, 22, 0.12), rgba(5, 10, 22, 0.54));
+  background:
+    linear-gradient(180deg, rgba(5, 11, 24, 0.18), rgba(5, 11, 24, 0.7)),
+    radial-gradient(circle at 50% 12%, rgba(120, 168, 255, 0.16), transparent 36%),
+    url("img/BG.png") center top / cover no-repeat,
+    #061025;
   pointer-events: none;
 }
 
 body::after {
-  display: none;
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  background: linear-gradient(180deg, rgba(5, 10, 22, 0.12), rgba(5, 10, 22, 0.54));
+  pointer-events: none;
 }
 
 button,
@@ -1114,15 +1120,18 @@ input:focus {
   body {
     min-height: 100dvh;
     font-size: 12px;
+    background: #061025;
+  }
+
+  body::before {
     background:
       linear-gradient(180deg, rgba(5, 11, 24, 0.04), rgba(5, 11, 24, 0.62)),
       radial-gradient(circle at 50% 14%, rgba(120, 168, 255, 0.12), transparent 40%),
       url("img/BG.png") center top / auto 100dvh no-repeat,
       #061025;
-    background-attachment: scroll;
   }
 
-  body::before {
+  body::after {
     background: linear-gradient(180deg, rgba(5, 10, 22, 0.04), rgba(5, 10, 22, 0.46));
   }
 
