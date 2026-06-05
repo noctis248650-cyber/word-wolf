@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>워드울프 V2</title>
     <link rel="stylesheet" href="../styles.css?v=20260605-font" />
-    <link rel="stylesheet" href="styles.css?v=20260605-soft-frame" />
+    <link rel="stylesheet" href="styles.css?v=20260605-turn-hud" />
   </head>
   <body>
     <main class="shell">
@@ -18,7 +18,7 @@
         </div>
         <div class="mast-actions">
           <div class="sound-menu" id="soundMenu">
-            <button class="sound-toggle" id="soundToggleBtn" type="button" aria-expanded="false">사운드</button>
+            <button class="sound-toggle" id="soundToggleBtn" type="button" aria-expanded="false" aria-label="사운드 설정"></button>
             <div class="sound-popover hidden" id="soundPanel">
               <div class="sound-row">
                 <span>BGM</span>
@@ -146,6 +146,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase-config.js"></script>
-    <script src="app.js?v=20260605-portraits" type="module"></script>
+    <script src="app.js?v=20260605-turn-hud" type="module"></script>
   </body>
 </html>

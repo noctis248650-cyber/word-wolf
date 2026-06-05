@@ -146,7 +146,9 @@ playerNameInput.value = localStorage.getItem("wordWolfPlayerName") || "";
 
 function updateSoundToggle() {
   if (!soundToggleBtn) return;
-  soundToggleBtn.textContent = state.soundEnabled ? "사운드" : "사운드 OFF";
+  soundToggleBtn.innerHTML = `<img src="../img/${state.soundEnabled ? "sound_on" : "sound_off"}.png" alt="" />`;
+  soundToggleBtn.setAttribute("aria-label", state.soundEnabled ? "사운드 켜짐" : "사운드 꺼짐");
+  soundToggleBtn.title = state.soundEnabled ? "사운드 켜짐" : "사운드 꺼짐";
   soundToggleBtn.classList.toggle("is-muted", !state.soundEnabled);
   if (soundMuteBtn) soundMuteBtn.textContent = state.soundEnabled ? "전체 사운드 끄기" : "전체 사운드 켜기";
 }
@@ -885,7 +887,7 @@ function renderHintPanel() {
   const canSubmit = state.room.phase === "hint" && activeId === state.playerId && !hasOwnHint;
 
   if (state.room.phase === "hint" && active) {
-    activeHintPlayer.textContent = `${active.name} 차례`;
+    activeHintPlayer.textContent = active.id === state.playerId ? `내 차례: ${active.name}` : `${active.name} 차례`;
   } else if (hints.length > 0) {
     activeHintPlayer.textContent = `${hints.length}개 제출`;
   } else {
@@ -920,6 +922,7 @@ function renderHintPanel() {
   hintButton.dataset.keepDisabled = canSubmit ? "false" : "true";
   hintForm.classList.toggle("hidden", state.room.phase !== "hint");
   hintForm.classList.toggle("is-live", canSubmit);
+  hintPanel.classList.toggle("is-my-turn", canSubmit);
   hintInput.placeholder = canSubmit ? "30초 안에 짧은 힌트 제출" : "내 차례가 되면 입력할 수 있어요";
 }
 
@@ -1184,7 +1187,7 @@ function render() {
   entryPanel.classList.add("hidden");
   gamePanel.classList.remove("hidden");
   leaveRoomBtn.classList.remove("hidden");
-  roomBadge.textContent = `방 코드 ${room.code}`;
+  roomBadge.innerHTML = `<span>방 코드</span><strong>${room.code}</strong>`;
   roomBadge.disabled = false;
   roomBadge.dataset.keepDisabled = "false";
   roomBadge.title = "방 코드 복사";
@@ -1297,10 +1300,10 @@ roomBadge.addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(state.room.code);
     clearTimeout(state.roomBadgeResetHandle);
-    roomBadge.textContent = "복사됨";
+    roomBadge.innerHTML = `<span>방 코드</span><strong>복사됨</strong>`;
     roomBadge.classList.add("copied");
     state.roomBadgeResetHandle = window.setTimeout(() => {
-      roomBadge.textContent = `방 코드 ${state.room?.code || ""}`;
+      roomBadge.innerHTML = `<span>방 코드</span><strong>${state.room?.code || ""}</strong>`;
       roomBadge.classList.remove("copied");
     }, 1200);
   } catch {
