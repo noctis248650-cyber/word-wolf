@@ -89,6 +89,10 @@ const audioSources = {
   bgm: [
     "../AUDIO/bgm_city_pop_1.mp3",
     "../AUDIO/bgm_city_pop_2.mp3",
+    "../AUDIO/bgm_city_pop_3.mp3",
+    "../AUDIO/bgm_city_pop_4.mp3",
+    "../AUDIO/bgm_city_pop_5.mp3",
+    "../AUDIO/bgm_city_pop_6.mp3",
     "../AUDIO/bgm_modern_city_pop_1.mp3",
     "../AUDIO/bgm_modern_city_pop_2.mp3",
     "../AUDIO/bgm_synth_pop_1.mp3",
