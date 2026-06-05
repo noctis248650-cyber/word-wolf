@@ -420,17 +420,51 @@ input:focus {
 }
 
 .avatar-choice {
+  position: relative;
   border-image-source: var(--wood-muted);
   background: linear-gradient(180deg, rgba(59, 75, 100, 0.78), rgba(17, 25, 39, 0.82));
   padding: 4px;
+  isolation: isolate;
 }
 
 .avatar-choice.selected {
-  border-image-source: var(--ornate-bright);
+  border-image-source: var(--wood);
+  background:
+    linear-gradient(180deg, rgba(32, 244, 203, 0.18), rgba(255, 214, 99, 0.1)),
+    linear-gradient(180deg, rgba(30, 49, 72, 0.92), rgba(12, 20, 34, 0.94));
   filter: brightness(1.12);
   box-shadow:
-    0 0 0 3px rgba(255, 211, 111, 0.2),
-    0 0 20px rgba(255, 211, 111, 0.42);
+    0 0 0 2px rgba(127, 255, 227, 0.72),
+    0 0 0 5px rgba(255, 211, 111, 0.28),
+    0 0 22px rgba(127, 255, 227, 0.42),
+    inset 0 0 18px rgba(255, 211, 111, 0.16);
+}
+
+.avatar-choice.selected::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(255, 238, 166, 0.86);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.avatar-choice.selected::after {
+  content: "선택";
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  z-index: 2;
+  min-width: 30px;
+  padding: 3px 5px 4px;
+  border: 1px solid rgba(255, 236, 156, 0.8);
+  border-radius: 5px 0 0 0;
+  background: linear-gradient(180deg, #ffe06a, #b97918);
+  color: #1f1600;
+  font-size: 8px;
+  line-height: 1;
+  text-align: center;
+  box-shadow: 0 0 12px rgba(255, 211, 111, 0.42);
 }
 
 .entry-section {
