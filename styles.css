@@ -23,7 +23,7 @@
 }
 
 html {
-  background: var(--paper);
+  background: #061025;
 }
 
 body {
@@ -34,10 +34,10 @@ body {
   font-family:
     Inter, Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   background:
-    linear-gradient(120deg, rgba(36, 214, 181, 0.18), transparent 28%),
-    linear-gradient(242deg, rgba(255, 104, 104, 0.15), transparent 32%),
-    linear-gradient(180deg, rgba(120, 168, 255, 0.13), transparent 48%),
-    var(--paper);
+    linear-gradient(180deg, rgba(5, 11, 24, 0.18), rgba(5, 11, 24, 0.7)),
+    radial-gradient(circle at 50% 12%, rgba(120, 168, 255, 0.16), transparent 36%),
+    url("img/BG.png") center top / cover fixed no-repeat,
+    #061025;
   overflow-x: hidden;
 }
 
@@ -46,25 +46,12 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -2;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent 78%);
+  background: linear-gradient(180deg, rgba(5, 10, 22, 0.12), rgba(5, 10, 22, 0.54));
+  pointer-events: none;
 }
 
 body::after {
-  content: "";
-  position: fixed;
-  inset: auto -12vw 0;
-  z-index: -1;
-  height: 48vh;
-  background:
-    linear-gradient(90deg, transparent, rgba(244, 195, 95, 0.08), transparent),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 96px);
-  transform: perspective(420px) rotateX(58deg);
-  transform-origin: bottom;
-  opacity: 0.65;
+  display: none;
 }
 
 button,
