@@ -77,6 +77,7 @@ const hasSupabaseConfig =
   !config.anonKey.includes("YOUR_SUPABASE");
 
 const db = hasSupabaseConfig ? window.supabase.createClient(config.url, config.anonKey) : null;
+const PLAYER_NAME_MAX_LENGTH = 12;
 
 function clampVolume(value) {
   if (!Number.isFinite(value)) return 0.18;
@@ -153,7 +154,7 @@ let state = {
   scrollTopOnNextRender: false
 };
 
-playerNameInput.value = localStorage.getItem("wordWolfPlayerName") || "";
+playerNameInput.value = (localStorage.getItem("wordWolfPlayerName") || "").slice(0, PLAYER_NAME_MAX_LENGTH);
 
 function updateSoundToggle() {
   if (!soundToggleBtn) return;
@@ -524,11 +525,12 @@ function scheduleAiChatReply() {
 }
 
 function requireName() {
-  const name = playerNameInput.value.trim();
+  const name = playerNameInput.value.trim().slice(0, PLAYER_NAME_MAX_LENGTH);
   if (!name) {
     playerNameInput.focus();
     throw new Error("아이디를 먼저 입력해주세요.");
   }
+  playerNameInput.value = name;
   localStorage.setItem("wordWolfPlayerName", name);
   return name;
 }
