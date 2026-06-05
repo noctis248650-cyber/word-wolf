@@ -14,7 +14,17 @@
           <h1>워드울프</h1>
         </div>
         <div class="mast-actions">
-          <button class="sound-toggle" id="soundToggleBtn" type="button" aria-pressed="true">사운드 ON</button>
+          <div class="sound-menu" id="soundMenu">
+            <button class="sound-toggle" id="soundToggleBtn" type="button" aria-expanded="false">사운드</button>
+            <div class="sound-popover hidden" id="soundPanel">
+              <div class="sound-row">
+                <span>BGM</span>
+                <strong id="bgmVolumeValue">18%</strong>
+              </div>
+              <input class="sound-slider" id="bgmVolumeInput" type="range" min="0" max="100" step="1" value="18" aria-label="BGM 볼륨" />
+              <button class="sound-mute" id="soundMuteBtn" type="button">전체 사운드 끄기</button>
+            </div>
+          </div>
           <div class="timer mast-timer hidden" id="mastTimer">--:--</div>
           <button class="room-badge" id="roomBadge" type="button" disabled>대기 중</button>
           <button class="leave-room hidden" id="leaveRoomBtn" type="button">나가기</button>
@@ -133,6 +143,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="app.js?v=20260605-audio" type="module"></script>
+    <script src="app.js?v=20260605-audio-volume" type="module"></script>
   </body>
 </html>

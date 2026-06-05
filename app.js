@@ -17,7 +17,12 @@ const createRoomBtn = document.querySelector("#createRoomBtn");
 const joinRoomBtn = document.querySelector("#joinRoomBtn");
 const roomBadge = document.querySelector("#roomBadge");
 const leaveRoomBtn = document.querySelector("#leaveRoomBtn");
+const soundMenu = document.querySelector("#soundMenu");
 const soundToggleBtn = document.querySelector("#soundToggleBtn");
+const soundPanel = document.querySelector("#soundPanel");
+const bgmVolumeInput = document.querySelector("#bgmVolumeInput");
+const bgmVolumeValue = document.querySelector("#bgmVolumeValue");
+const soundMuteBtn = document.querySelector("#soundMuteBtn");
 const playerCount = document.querySelector("#playerCount");
 const playersEl = document.querySelector("#players");
 const phaseTitle = document.querySelector("#phaseTitle");
@@ -71,6 +76,13 @@ const hasSupabaseConfig =
 
 const db = hasSupabaseConfig ? window.supabase.createClient(config.url, config.anonKey) : null;
 
+function clampVolume(value) {
+  if (!Number.isFinite(value)) return 0.18;
+  return Math.min(1, Math.max(0, value));
+}
+
+const savedBgmVolume = clampVolume(Number(localStorage.getItem("wordWolfBgmVolume") ?? 18) / 100);
+
 const audioSources = {
   bgm: [
     "AUDIO/bgm_city_pop_1.mp3",
@@ -94,7 +106,7 @@ const audioPlayers = {
   result: new Audio(audioSources.result)
 };
 
-audioPlayers.bgm.volume = 0.18;
+audioPlayers.bgm.volume = savedBgmVolume;
 audioPlayers.button.volume = 0.32;
 audioPlayers.chat.volume = 0.34;
 audioPlayers.phase.volume = 0.42;
@@ -120,6 +132,7 @@ let state = {
   aiChatGeneralRepliedIds: new Set(),
   aiChatGeneralIndex: 0,
   soundEnabled: localStorage.getItem("wordWolfSoundEnabled") !== "false",
+  bgmVolume: savedBgmVolume,
   audioUnlocked: false,
   bgmIndex: Math.floor(Math.random() * audioSources.bgm.length),
   lastPhaseAudioKey: "",
@@ -131,9 +144,29 @@ playerNameInput.value = localStorage.getItem("wordWolfPlayerName") || "";
 
 function updateSoundToggle() {
   if (!soundToggleBtn) return;
-  soundToggleBtn.textContent = state.soundEnabled ? "사운드 ON" : "사운드 OFF";
+  soundToggleBtn.textContent = state.soundEnabled ? "사운드" : "사운드 OFF";
   soundToggleBtn.classList.toggle("is-muted", !state.soundEnabled);
-  soundToggleBtn.setAttribute("aria-pressed", String(state.soundEnabled));
+  if (soundMuteBtn) soundMuteBtn.textContent = state.soundEnabled ? "전체 사운드 끄기" : "전체 사운드 켜기";
+}
+
+function updateBgmVolumeControl() {
+  const percent = Math.round(state.bgmVolume * 100);
+  audioPlayers.bgm.volume = state.bgmVolume;
+  if (bgmVolumeInput) bgmVolumeInput.value = String(percent);
+  if (bgmVolumeValue) bgmVolumeValue.textContent = `${percent}%`;
+}
+
+function setSoundMenuOpen(open) {
+  if (!soundPanel || !soundToggleBtn || !soundMenu) return;
+  soundPanel.classList.toggle("hidden", !open);
+  soundMenu.classList.toggle("is-open", open);
+  soundToggleBtn.setAttribute("aria-expanded", String(open));
+}
+
+function setBgmVolume(percent) {
+  state.bgmVolume = clampVolume(Number(percent) / 100);
+  localStorage.setItem("wordWolfBgmVolume", String(Math.round(state.bgmVolume * 100)));
+  updateBgmVolumeControl();
 }
 
 function playNextBgm() {
@@ -168,6 +201,7 @@ function setSoundEnabled(enabled) {
   state.soundEnabled = enabled;
   localStorage.setItem("wordWolfSoundEnabled", String(enabled));
   updateSoundToggle();
+  updateBgmVolumeControl();
 
   if (enabled) {
     unlockAudio();
@@ -1163,6 +1197,7 @@ function render() {
 }
 
 updateSoundToggle();
+updateBgmVolumeControl();
 
 document.addEventListener("pointerdown", unlockAudio, { once: true });
 document.addEventListener("keydown", unlockAudio, { once: true });
@@ -1176,7 +1211,21 @@ document.addEventListener(
 );
 
 soundToggleBtn?.addEventListener("click", () => {
+  setSoundMenuOpen(soundPanel?.classList.contains("hidden") ?? true);
+});
+
+soundMuteBtn?.addEventListener("click", () => {
   setSoundEnabled(!state.soundEnabled);
+});
+
+bgmVolumeInput?.addEventListener("input", () => {
+  setBgmVolume(bgmVolumeInput.value);
+  if (state.soundEnabled) unlockAudio();
+});
+
+document.addEventListener("click", (event) => {
+  if (!soundMenu || soundMenu.contains(event.target)) return;
+  setSoundMenuOpen(false);
 });
 
 enterLobbyBtn.addEventListener("click", () =>
