@@ -1374,12 +1374,27 @@ async function restoreSession() {
   }
 }
 
+function shouldRestoreSession() {
+  const [navigation] = performance.getEntriesByType?.("navigation") || [];
+  return navigation?.type === "reload";
+}
+
+function clearStoredRoomSession() {
+  localStorage.removeItem("wordWolfRoomCode");
+  localStorage.removeItem("wordWolfPlayerId");
+  state.playerId = "";
+}
+
 if (!hasSupabaseConfig) {
   setMessage("Supabase 설정이 필요해요. supabase-config.js에 Project URL과 anon public key를 넣어주세요.", true);
 } else {
-  restoreSession();
   renderAvatarChoices();
   renderEntryStep();
+  if (shouldRestoreSession()) {
+    restoreSession();
+  } else {
+    clearStoredRoomSession();
+  }
   fetchRooms();
   setInterval(fetchRooms, 5000);
 }
