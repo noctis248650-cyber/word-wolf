@@ -202,7 +202,7 @@ async function runAiBotTurn(action, botPlayerId, extraBody = {}) {
 }
 
 function getAiTurn() {
-  if (!isHost() || !state.room?.currentGame || state.busy) return null;
+  if (!isHost() || !state.room?.currentGame) return null;
 
   const game = state.room.currentGame;
   if (state.room.phase === "hint") {
@@ -252,13 +252,7 @@ function scheduleAiTurn() {
   state.aiTurnInProgressKey = turn.key;
   window.setTimeout(() => {
     if (state.aiTurnInProgressKey !== turn.key) return;
-    if (state.busy) {
-      state.aiTurnInProgressKey = "";
-      return;
-    }
 
-    state.busy = true;
-    setButtonsDisabled(true);
     setMessage(turn.message);
 
     runAiBotTurn(turn.action, turn.botId)
@@ -271,8 +265,6 @@ function scheduleAiTurn() {
       })
       .finally(() => {
         state.aiTurnInProgressKey = "";
-        state.busy = false;
-        setButtonsDisabled(false);
         window.setTimeout(scheduleAiTurn, 80);
       });
   }, 350);
@@ -315,7 +307,7 @@ function nextGeneralChatBot(message, bots) {
 }
 
 function scheduleAiChatReply() {
-  if (!isHost() || !state.room || state.busy || state.aiChatInProgressKey) return;
+  if (!isHost() || !state.room || state.aiChatInProgressKey) return;
 
   const triggerMessage = getLatestHumanMessage();
   if (!triggerMessage) return;
@@ -340,15 +332,6 @@ function scheduleAiChatReply() {
 
   window.setTimeout(() => {
     if (state.aiChatInProgressKey !== key) return;
-    if (state.busy) {
-      state.aiChatInProgressKey = "";
-      state.aiChatRepliedKeys.delete(key);
-      if (!mentionedBot) state.aiChatGeneralRepliedIds.delete(triggerMessage.id);
-      return;
-    }
-
-    state.busy = true;
-    setButtonsDisabled(true);
     setMessage(`${bot.name}이 답장하는 중이에요.`);
 
     runAiBotTurn("chat", bot.id, { triggerMessageId: triggerMessage.id })
@@ -358,8 +341,6 @@ function scheduleAiChatReply() {
       })
       .finally(() => {
         state.aiChatInProgressKey = "";
-        state.busy = false;
-        setButtonsDisabled(false);
       });
   }, 650);
 }
@@ -901,16 +882,6 @@ function renderHintActions() {
   const active = playerById(state.room.currentGame?.activePlayerId);
   addForceVoteButton();
 
-  if (active?.isBot && isHost()) {
-    addButton("AI 힌트 생성", "primary", () =>
-      runAction(async () => {
-        setMessage(`${active.name}이 힌트를 생각하는 중이에요.`);
-        await runAiBotTurn("hint", active.id);
-        render();
-      })
-    );
-  }
-
   if (isActivePlayer()) {
     setMessage("지금 당신 차례예요. 힌트 패널에 30초 안에 힌트를 제출하세요.");
   } else {
@@ -950,20 +921,6 @@ function renderVoteActions() {
     voteList.append(button);
   }
 
-  if (isHost() && state.room.players.some((player) => player.isBot && !player.votedFor)) {
-    addButton("AI 투표", "", () =>
-      runAction(async () => {
-        const bots = state.room.players.filter((player) => player.isBot && !player.votedFor);
-        for (const bot of bots) {
-          if (state.room.phase !== "vote") break;
-          setMessage(`${bot.name}이 투표 대상을 고르는 중이에요.`);
-          await runAiBotTurn("vote", bot.id);
-        }
-        render();
-      })
-    );
-  }
-
   setMessage(alreadyVoted ? "투표가 반영됐어요. 모두 투표하거나 30초가 지나면 결과가 진행됩니다." : "30초 안에 워드울프라고 생각하는 사람에게 투표하세요.");
 }
 
@@ -999,16 +956,6 @@ function renderWolfGuessActions() {
     input.focus();
     setMessage("울프로 지목됐어요. 시민의 진짜 단어를 맞히면 역전 승리입니다.");
     return;
-  }
-
-  if (active?.isBot && isHost()) {
-    addButton("AI 추리 생성", "primary", () =>
-      runAction(async () => {
-        setMessage(`${active.name}이 시민 단어를 추리하는 중이에요.`);
-        await runAiBotTurn("guess", active.id);
-        render();
-      })
-    );
   }
 
   setMessage(`${active?.name || "울프"}님이 시민 단어를 추리하는 중이에요. 30초 안에 맞히면 울프가 승리합니다.`);
