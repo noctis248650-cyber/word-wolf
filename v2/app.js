@@ -150,7 +150,13 @@ function updateSoundToggle() {
   soundToggleBtn.setAttribute("aria-label", state.soundEnabled ? "사운드 켜짐" : "사운드 꺼짐");
   soundToggleBtn.title = state.soundEnabled ? "사운드 켜짐" : "사운드 꺼짐";
   soundToggleBtn.classList.toggle("is-muted", !state.soundEnabled);
-  if (soundMuteBtn) soundMuteBtn.textContent = state.soundEnabled ? "전체 사운드 끄기" : "전체 사운드 켜기";
+  if (soundMuteBtn) {
+    soundMuteBtn.innerHTML = `
+      <img src="../img/${state.soundEnabled ? "sound_on" : "sound_off"}.png" alt="" />
+      <span>${state.soundEnabled ? "전체 사운드 끄기" : "전체 사운드 켜기"}</span>
+    `;
+    soundMuteBtn.setAttribute("aria-label", state.soundEnabled ? "전체 사운드 끄기" : "전체 사운드 켜기");
+  }
 }
 
 function updateBgmVolumeControl() {

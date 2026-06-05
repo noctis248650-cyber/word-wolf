@@ -294,6 +294,46 @@ h2 {
   accent-color: var(--gold);
 }
 
+.sound-mute {
+  min-height: 34px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 4px 2px;
+  border: 0;
+  border-image: none;
+  border-radius: 0;
+  background: transparent;
+  color: #f6fbff;
+  box-shadow: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.sound-mute img {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.sound-mute span {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.sound-mute:hover:not(:disabled) {
+  background: rgba(127, 255, 227, 0.08);
+  filter: brightness(1.15);
+  transform: none;
+}
+
+.sound-mute:active:not(:disabled) {
+  transform: none;
+  box-shadow: none;
+}
+
 .timer {
   min-width: 84px;
   white-space: nowrap;
