@@ -52,6 +52,7 @@ const avatars = [
   { id: "img4", src: "img/IMG_2026_06_04_20_25_0004.png", label: "아이콘 4" },
   { id: "img5", src: "img/IMG_2026_06_04_20_25_0005.png", label: "아이콘 5" },
   { id: "img6", src: "img/IMG_2026_06_04_20_25_0006.png", label: "아이콘 6" },
+  { id: "img7", src: "img/IMG_2026_06_05_13_11_0001.png", label: "아이콘 7" },
   { id: "bot", icon: "AI", label: "AI" }
 ];
 
