@@ -73,6 +73,7 @@ function getServiceKey() {
 const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
 const supabaseKey = getServiceKey();
 const openaiKey = Deno.env.get("OPENAI_API_KEY") || "";
+const openaiModel = Deno.env.get("OPENAI_MODEL") || "gpt-4.1";
 
 async function rpc<T>(name: string, payload: Record<string, unknown>): Promise<T> {
   if (!supabaseUrl || !supabaseKey) {
@@ -160,7 +161,7 @@ async function askOpenAI(instructions: string, input: string, maxOutputTokens = 
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: "gpt-4.1-mini",
+      model: openaiModel,
       instructions,
       input,
       max_output_tokens: maxOutputTokens,
