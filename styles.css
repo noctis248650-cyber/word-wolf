@@ -1114,10 +1114,16 @@ input:focus {
   body {
     min-height: 100dvh;
     font-size: 12px;
+    background:
+      linear-gradient(180deg, rgba(5, 11, 24, 0.04), rgba(5, 11, 24, 0.62)),
+      radial-gradient(circle at 50% 14%, rgba(120, 168, 255, 0.12), transparent 40%),
+      url("img/BG.png") center top / auto 100dvh no-repeat,
+      #061025;
+    background-attachment: scroll;
   }
 
-  body::after {
-    height: 34vh;
+  body::before {
+    background: linear-gradient(180deg, rgba(5, 10, 22, 0.04), rgba(5, 10, 22, 0.46));
   }
 
   .shell {
@@ -1187,13 +1193,20 @@ input:focus {
   }
 
   .join-panel {
-    margin-top: 0;
+    width: min(100% - 20px, 420px);
+    margin: 32dvh auto 0;
     min-height: calc(100dvh - 48px);
     max-width: none;
-    padding: 12px 10px;
+    padding: 12px 10px 20px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
+    border: 1px solid rgba(181, 203, 255, 0.24);
+    border-radius: 14px;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
+      rgba(15, 23, 38, 0.7);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
   }
 
   .join-grid,
