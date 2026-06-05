@@ -568,7 +568,7 @@ input:focus {
 }
 
 .create-room-grid {
-  grid-template-columns: 1fr 86px 104px 104px;
+  grid-template-columns: 1fr 86px 104px 128px 104px;
 }
 
 .secret-room-toggle input {

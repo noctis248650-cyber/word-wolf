@@ -550,7 +550,7 @@ input:focus {
 
 .create-room-grid {
   display: grid;
-  grid-template-columns: 1fr 92px 92px 96px;
+  grid-template-columns: 1fr 92px 92px 122px 96px;
   gap: 8px;
 }
 

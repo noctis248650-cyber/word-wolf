@@ -7,6 +7,7 @@ const roomCodeInput = document.querySelector("#roomCode");
 const roomTitleInput = document.querySelector("#roomTitle");
 const maxPlayersInput = document.querySelector("#maxPlayers");
 const privateRoomInput = document.querySelector("#privateRoom");
+const hideCategoryInput = document.querySelector("#hideCategory");
 const avatarChoices = document.querySelector("#avatarChoices");
 const roomListEl = document.querySelector("#roomList");
 const refreshRoomsBtn = document.querySelector("#refreshRoomsBtn");
@@ -878,7 +879,7 @@ function renderSecret() {
   }
 
   secretWord.textContent = game.viewerWord || "비밀";
-  categoryText.textContent = `카테고리: ${game.category || "-"}`;
+  categoryText.textContent = state.room.settings?.hideCategory ? "카테고리 비공개" : `카테고리: ${game.category || "-"}`;
 }
 
 function renderHintPanel() {
@@ -1267,7 +1268,8 @@ createRoomBtn.addEventListener("click", () =>
       p_avatar: state.selectedAvatar,
       p_title: requireRoomTitle(),
       p_max_players: requireMaxPlayers(),
-      p_is_private: privateRoomInput.checked
+      p_is_private: privateRoomInput.checked,
+      p_hide_category: hideCategoryInput.checked
     });
     saveSession(data.room, data.playerId);
     startPolling();
