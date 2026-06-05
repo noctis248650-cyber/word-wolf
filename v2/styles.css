@@ -379,16 +379,17 @@ h2 {
   margin: 22px auto 0;
   padding: 16px;
   background:
-    linear-gradient(180deg, rgba(239, 198, 154, 0.82), rgba(224, 184, 137, 0.8)),
-    #e9c29a;
+    linear-gradient(180deg, rgba(21, 48, 91, 0.8), rgba(8, 19, 39, 0.9)),
+    rgba(10, 22, 43, 0.86);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 244, 205, 0.18),
-    0 14px 26px rgba(0, 0, 0, 0.16);
+    inset 0 0 0 1px rgba(163, 201, 255, 0.14),
+    0 18px 34px rgba(0, 0, 0, 0.28),
+    inset 0 0 34px rgba(54, 106, 180, 0.14);
 }
 
 .join-panel label,
 .join-panel .field-label {
-  color: #5d3716;
+  color: #d8e8ff;
 }
 
 input {
@@ -433,9 +434,9 @@ input:focus {
   border-image-slice: 8 fill;
   border-image-width: 8px;
   background:
-    linear-gradient(180deg, rgba(239, 218, 164, 0.98), rgba(177, 139, 80, 0.96)),
-    var(--paper);
-  color: #2b1d11;
+    linear-gradient(180deg, rgba(31, 63, 112, 0.76), rgba(12, 27, 54, 0.82)),
+    rgba(10, 22, 43, 0.8);
+  color: #f2f7ff;
 }
 
 .lobby-profile {
@@ -564,7 +565,7 @@ input:focus {
 
 .room-list-item span,
 .room-list-empty {
-  color: #5d4324;
+  color: #d7e7ff;
 }
 
 .create-room-grid {
