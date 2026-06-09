@@ -43,6 +43,11 @@ body {
   overflow-x: hidden;
 }
 
+body.v1,
+body.v1 * {
+  font-weight: 400 !important;
+}
+
 body::before {
   content: "";
   position: fixed;
@@ -242,6 +247,19 @@ h1 {
   text-shadow:
     0 0 24px rgba(120, 168, 255, 0.2),
     0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+.title-mark {
+  display: inline-flex;
+  align-items: center;
+}
+
+.title-logo {
+  width: clamp(126px, 19vw, 210px);
+  max-height: 54px;
+  object-fit: contain;
+  object-position: left center;
+  filter: none;
 }
 
 h2 {
@@ -1168,6 +1186,11 @@ input:focus {
 
   h1 {
     font-size: 20px;
+  }
+
+  .title-logo {
+    width: clamp(104px, 32vw, 146px);
+    max-height: 42px;
   }
 
   h2 {
