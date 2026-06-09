@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>워드울프</title>
-    <link rel="stylesheet" href="styles.css?v=20260609-v1-room-rules-audio" />
+    <link rel="stylesheet" href="styles.css?v=20260609-v1-help-sound-guess" />
   </head>
   <body class="v1">
     <main class="shell">
@@ -16,7 +16,7 @@
         </div>
         <div class="mast-actions">
           <div class="sound-menu" id="soundMenu">
-            <button class="sound-toggle" id="soundToggleBtn" type="button" aria-expanded="false">사운드</button>
+            <button class="sound-toggle" id="soundToggleBtn" type="button" aria-expanded="false" aria-label="사운드 설정"></button>
             <div class="sound-popover hidden" id="soundPanel">
               <div class="sound-row">
                 <span>BGM</span>
@@ -26,6 +26,7 @@
               <button class="sound-mute" id="soundMuteBtn" type="button">전체 사운드 끄기</button>
             </div>
           </div>
+          <a class="help-link" href="guide-v1.html" target="_blank" rel="noopener" aria-label="플레이 설명서">?</a>
           <div class="timer mast-timer hidden" id="mastTimer">--:--</div>
           <button class="room-badge" id="roomBadge" type="button" disabled>대기 중</button>
           <button class="leave-room hidden" id="leaveRoomBtn" type="button">나가기</button>
@@ -147,6 +148,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="app.js?v=20260609-v1-result-guess" type="module"></script>
+    <script src="app.js?v=20260609-v1-help-sound-guess" type="module"></script>
   </body>
 </html>

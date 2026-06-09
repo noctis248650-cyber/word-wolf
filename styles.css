@@ -149,12 +149,23 @@ button:disabled {
 }
 
 .sound-toggle {
-  min-height: 36px;
-  padding: 0 10px;
+  width: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
   border-color: rgba(36, 214, 181, 0.36);
   background: rgba(36, 214, 181, 0.1);
   color: #baf8ed;
   font-size: 11px;
+}
+
+.sound-toggle img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  pointer-events: none;
 }
 
 .sound-toggle.is-muted {
@@ -217,11 +228,47 @@ button:disabled {
 }
 
 .sound-mute {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   width: 100%;
   min-height: 32px;
   margin-top: 8px;
   font-size: 11px;
   color: #dce7ff;
+}
+
+.sound-mute img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.help-link {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  border: 1px solid rgba(120, 168, 255, 0.34);
+  border-radius: 8px;
+  background: rgba(120, 168, 255, 0.1);
+  color: #d9e7ff;
+  text-decoration: none;
+  font-size: 18px;
+  line-height: 1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease;
+}
+
+.help-link:hover {
+  border-color: rgba(120, 168, 255, 0.74);
+  background: rgba(120, 168, 255, 0.17);
+  transform: translateY(-1px);
 }
 
 .eyebrow,
@@ -963,6 +1010,18 @@ input:focus {
   box-shadow:
     0 0 18px rgba(244, 195, 95, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.wolf-guess-form.is-live input {
+  border-color: rgba(36, 214, 181, 0.96);
+  box-shadow:
+    0 0 0 3px rgba(36, 214, 181, 0.18),
+    0 0 26px rgba(36, 214, 181, 0.46),
+    inset 0 1px 8px rgba(0, 0, 0, 0.28);
+}
+
+.wolf-guess-form.is-live input::placeholder {
+  color: rgba(154, 246, 229, 0.86);
 }
 
 @keyframes hint-input-pulse {

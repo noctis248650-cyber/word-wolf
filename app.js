@@ -90,6 +90,10 @@ const audioSources = {
   bgm: [
     "AUDIO/bgm_city_pop_1.mp3",
     "AUDIO/bgm_city_pop_2.mp3",
+    "AUDIO/bgm_city_pop_3.mp3",
+    "AUDIO/bgm_city_pop_4.mp3",
+    "AUDIO/bgm_city_pop_5.mp3",
+    "AUDIO/bgm_city_pop_6.mp3",
     "AUDIO/bgm_modern_city_pop_1.mp3",
     "AUDIO/bgm_modern_city_pop_2.mp3",
     "AUDIO/bgm_synth_pop_1.mp3",
@@ -140,16 +144,26 @@ let state = {
   bgmIndex: Math.floor(Math.random() * audioSources.bgm.length),
   lastPhaseAudioKey: "",
   chatSoundInitialized: false,
-  seenMessageSoundIds: new Set()
+  seenMessageSoundIds: new Set(),
+  wolfGuessDraftKey: "",
+  wolfGuessDraft: ""
 };
 
 playerNameInput.value = (localStorage.getItem("wordWolfPlayerName") || "").slice(0, PLAYER_NAME_MAX_LENGTH);
 
 function updateSoundToggle() {
   if (!soundToggleBtn) return;
-  soundToggleBtn.textContent = state.soundEnabled ? "사운드" : "사운드 OFF";
+  soundToggleBtn.innerHTML = `<img src="img/${state.soundEnabled ? "sound_on" : "sound_off"}.png" alt="" />`;
+  soundToggleBtn.setAttribute("aria-label", state.soundEnabled ? "사운드 켜짐" : "사운드 꺼짐");
+  soundToggleBtn.title = state.soundEnabled ? "사운드 켜짐" : "사운드 꺼짐";
   soundToggleBtn.classList.toggle("is-muted", !state.soundEnabled);
-  if (soundMuteBtn) soundMuteBtn.textContent = state.soundEnabled ? "전체 사운드 끄기" : "전체 사운드 켜기";
+  if (soundMuteBtn) {
+    soundMuteBtn.innerHTML = `
+      <img src="img/${state.soundEnabled ? "sound_on" : "sound_off"}.png" alt="" />
+      <span>${state.soundEnabled ? "전체 사운드 끄기" : "전체 사운드 켜기"}</span>
+    `;
+    soundMuteBtn.setAttribute("aria-label", state.soundEnabled ? "전체 사운드 끄기" : "전체 사운드 켜기");
+  }
 }
 
 function updateBgmVolumeControl() {
@@ -1078,11 +1092,21 @@ function renderWolfGuessActions() {
   const active = playerById(state.room.currentGame?.activePlayerId);
 
   if (isActivePlayer()) {
+    const draftKey = `${state.room.code}:${state.room.round}:${state.playerId}`;
+    if (state.wolfGuessDraftKey !== draftKey) {
+      state.wolfGuessDraftKey = draftKey;
+      state.wolfGuessDraft = "";
+    }
+
     const form = document.createElement("form");
-    form.className = "hint-form";
+    form.className = "hint-form is-live wolf-guess-form";
 
     const input = document.createElement("input");
     input.maxLength = 40;
+    input.value = state.wolfGuessDraft;
+    input.addEventListener("input", () => {
+      state.wolfGuessDraft = input.value;
+    });
     input.placeholder = "시민 단어 입력";
 
     const submit = document.createElement("button");
@@ -1097,8 +1121,9 @@ function renderWolfGuessActions() {
         state.room = await rpc("ww_submit_wolf_guess", {
           p_code: state.room.code,
           p_player_id: state.playerId,
-          p_guess: input.value.trim()
+          p_guess: state.wolfGuessDraft.trim()
         });
+        state.wolfGuessDraft = "";
         render();
       });
     });
@@ -1156,7 +1181,14 @@ function renderResultActions() {
 }
 
 function renderActions() {
+  const stableWolfGuessKey =
+    state.room.phase === "wolf_guess" && isActivePlayer()
+      ? `wolf_guess:${state.room.code}:${state.room.round}:${state.playerId}`
+      : "";
+  if (stableWolfGuessKey && actionBar.dataset.renderKey === stableWolfGuessKey) return;
+
   clearActions();
+  actionBar.dataset.renderKey = stableWolfGuessKey;
   const renderByPhase = {
     lobby: renderLobbyActions,
     reveal: renderRevealActions,

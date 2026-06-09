@@ -70,6 +70,8 @@
       .subtitle {
         color: var(--muted);
         max-width: 720px;
+        overflow-wrap: anywhere;
+        word-break: break-all;
       }
 
       .quick-rules {
@@ -159,6 +161,8 @@
       .step li {
         color: #dce7f8;
         font-size: 14px;
+        overflow-wrap: anywhere;
+        word-break: break-all;
       }
 
       ul {
@@ -167,8 +171,10 @@
       }
 
       .shot {
+        margin: 0;
+        max-width: 100%;
         min-height: 360px;
-        border: 2px dashed rgba(255, 212, 121, 0.48);
+        border: 1px solid rgba(255, 212, 121, 0.3);
         border-radius: 12px;
         background:
           linear-gradient(180deg, rgba(241, 223, 191, 0.08), rgba(241, 223, 191, 0.03)),
@@ -176,6 +182,14 @@
         display: grid;
         place-items: center;
         overflow: hidden;
+      }
+
+      .shot img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 620px;
+        object-fit: contain;
       }
 
       .shot-inner {
@@ -288,6 +302,11 @@
       }
 
       @media (max-width: 520px) {
+        .subtitle,
+        .step-copy {
+          width: min(100%, 280px);
+        }
+
         .quick-rules,
         .rules-grid {
           grid-template-columns: 1fr;
@@ -307,7 +326,7 @@
         <h1>V1 플레이 설명서</h1>
         <p class="subtitle">
           친구들과 같은 방에 입장해 서로의 힌트와 채팅을 보고 워드울프를 찾아내는 실시간 파티 게임입니다.
-          아래 스크린샷 영역은 임시 플레이스홀더입니다.
+          실제 화면 예시를 보면서 입장부터 결과 확인까지 순서대로 따라갈 수 있습니다.
         </p>
         <div class="quick-rules">
           <div class="rule-chip">
@@ -329,19 +348,6 @@
         </div>
       </section>
 
-      <section class="section replace-guide">
-        <div class="section-head">
-          <h2>스크린샷 교체 가이드</h2>
-          <p class="section-note">나중에 받은 이미지를 아래 코드에 맞춰 교체하면 됩니다.</p>
-        </div>
-        <p>
-          각 이미지 자리에는 <code>data-shot</code> 값이 있습니다. 예를 들어
-          <code>SHOT-01</code> 스크린샷을 받으면 해당 영역을
-          <code>&lt;img src="guide-assets/shot-01-profile.png" alt="프로필 설정 화면" /&gt;</code>
-          형태로 교체하면 됩니다.
-        </p>
-      </section>
-
       <section class="section">
         <div class="section-head">
           <h2>게임 준비</h2>
@@ -360,14 +366,7 @@
               </ul>
             </div>
             <figure class="shot" data-shot="SHOT-01">
-              <div class="shot-inner">
-                <div>
-                  <span class="shot-code">SHOT-01</span>
-                  <p class="shot-title">프로필 설정 화면</p>
-                  <p class="shot-desc">아이디 입력창과 아이콘 선택 영역이 보이는 스크린샷</p>
-                  <p class="shot-file">권장 파일명: guide-assets/shot-01-profile.png</p>
-                </div>
-              </div>
+              <img src="guide-assets/shot-01-profile.png" alt="프로필 설정 화면" />
             </figure>
           </article>
 
@@ -383,14 +382,7 @@
               </ul>
             </div>
             <figure class="shot" data-shot="SHOT-02">
-              <div class="shot-inner">
-                <div>
-                  <span class="shot-code">SHOT-02</span>
-                  <p class="shot-title">대기실 방 목록 화면</p>
-                  <p class="shot-desc">생성된 방, 방 만들기, 코드 입장 영역이 보이는 스크린샷</p>
-                  <p class="shot-file">권장 파일명: guide-assets/shot-02-lobby.png</p>
-                </div>
-              </div>
+              <img src="guide-assets/shot-02-lobby.png" alt="대기실 방 목록 화면" />
             </figure>
           </article>
 
@@ -405,14 +397,7 @@
               </ul>
             </div>
             <figure class="shot" data-shot="SHOT-03">
-              <div class="shot-inner">
-                <div>
-                  <span class="shot-code">SHOT-03</span>
-                  <p class="shot-title">방 만들기 옵션 화면</p>
-                  <p class="shot-desc">비밀방, 카테고리 숨김 체크박스가 보이는 스크린샷</p>
-                  <p class="shot-file">권장 파일명: guide-assets/shot-03-create-room.png</p>
-                </div>
-              </div>
+              <img src="guide-assets/shot-03-create-room.png" alt="방 만들기 옵션 화면" />
             </figure>
           </article>
         </div>
@@ -435,14 +420,7 @@
               </ul>
             </div>
             <figure class="shot" data-shot="SHOT-04">
-              <div class="shot-inner">
-                <div>
-                  <span class="shot-code">SHOT-04</span>
-                  <p class="shot-title">방 내부 대기 화면</p>
-                  <p class="shot-desc">플레이어 목록, 방 코드, 게임 시작 버튼이 보이는 스크린샷</p>
-                  <p class="shot-file">권장 파일명: guide-assets/shot-04-room-wait.png</p>
-                </div>
-              </div>
+              <img src="guide-assets/shot-04-room-wait.png" alt="방 내부 대기 화면" />
             </figure>
           </article>
 
@@ -457,14 +435,7 @@
               </ul>
             </div>
             <figure class="shot" data-shot="SHOT-05">
-              <div class="shot-inner">
-                <div>
-                  <span class="shot-code">SHOT-05</span>
-                  <p class="shot-title">단어 확인 화면</p>
-                  <p class="shot-desc">내 단어 카드와 제한 시간이 보이는 스크린샷</p>
-                  <p class="shot-file">권장 파일명: guide-assets/shot-05-word-reveal.png</p>
-                </div>
-              </div>
+              <img src="guide-assets/shot-05-word-reveal.png" alt="단어 확인 화면" />
             </figure>
           </article>
 
@@ -480,14 +451,7 @@
               </ul>
             </div>
             <figure class="shot" data-shot="SHOT-06">
-              <div class="shot-inner">
-                <div>
-                  <span class="shot-code">SHOT-06</span>
-                  <p class="shot-title">힌트 제출 화면</p>
-                  <p class="shot-desc">힌트 목록, 내 차례 표시, 힌트 입력창이 보이는 스크린샷</p>
-                  <p class="shot-file">권장 파일명: guide-assets/shot-06-hint.png</p>
-                </div>
-              </div>
+              <img src="guide-assets/shot-06-hint.png" alt="힌트 제출 화면" />
             </figure>
           </article>
 
@@ -502,14 +466,7 @@
               </ul>
             </div>
             <figure class="shot" data-shot="SHOT-07">
-              <div class="shot-inner">
-                <div>
-                  <span class="shot-code">SHOT-07</span>
-                  <p class="shot-title">채팅 토론 화면</p>
-                  <p class="shot-desc">채팅창과 남은 시간이 보이는 스크린샷</p>
-                  <p class="shot-file">권장 파일명: guide-assets/shot-07-chat.png</p>
-                </div>
-              </div>
+              <img src="guide-assets/shot-07-chat.png" alt="채팅 토론 화면" />
             </figure>
           </article>
 
@@ -525,14 +482,7 @@
               </ul>
             </div>
             <figure class="shot" data-shot="SHOT-08">
-              <div class="shot-inner">
-                <div>
-                  <span class="shot-code">SHOT-08</span>
-                  <p class="shot-title">투표 화면</p>
-                  <p class="shot-desc">투표 버튼 목록과 투표 제한 시간이 보이는 스크린샷</p>
-                  <p class="shot-file">권장 파일명: guide-assets/shot-08-vote.png</p>
-                </div>
-              </div>
+              <img src="guide-assets/shot-08-vote.png" alt="투표 화면" />
             </figure>
           </article>
         </div>
@@ -556,14 +506,7 @@
               </ul>
             </div>
             <figure class="shot" data-shot="SHOT-09">
-              <div class="shot-inner">
-                <div>
-                  <span class="shot-code">SHOT-09</span>
-                  <p class="shot-title">울프 최종 추리 화면</p>
-                  <p class="shot-desc">울프가 시민 단어를 입력하는 화면 또는 다른 시민의 대기 화면</p>
-                  <p class="shot-file">권장 파일명: guide-assets/shot-09-wolf-guess.png</p>
-                </div>
-              </div>
+              <img src="guide-assets/shot-09-wolf-guess.png" alt="울프 최종 추리 화면" />
             </figure>
           </article>
 
@@ -579,14 +522,7 @@
               </ul>
             </div>
             <figure class="shot" data-shot="SHOT-10">
-              <div class="shot-inner">
-                <div>
-                  <span class="shot-code">SHOT-10</span>
-                  <p class="shot-title">결과 화면</p>
-                  <p class="shot-desc">승리 팀, 워드울프, 투표 결과가 보이는 스크린샷</p>
-                  <p class="shot-file">권장 파일명: guide-assets/shot-10-result.png</p>
-                </div>
-              </div>
+              <img src="guide-assets/shot-10-result.png" alt="결과 화면" />
             </figure>
           </article>
         </div>
