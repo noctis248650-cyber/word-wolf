@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>워드울프 V1 플레이 설명서</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #07111f;
+        --panel: rgba(14, 28, 51, 0.88);
+        --panel-soft: rgba(32, 58, 94, 0.5);
+        --line: rgba(177, 206, 255, 0.22);
+        --gold: #d89419;
+        --mint: #24d6b5;
+        --ink: #f5f8ff;
+        --muted: #aebbd0;
+        --paper: #f1dfbf;
+        --paper-ink: #25190e;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(65, 112, 190, 0.24), transparent 36rem),
+          linear-gradient(180deg, #0a1830 0%, #07111f 42%, #030712 100%);
+        color: var(--ink);
+        font-family:
+          Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      main {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 32px 0 56px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding: 24px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: linear-gradient(180deg, rgba(20, 42, 78, 0.84), rgba(8, 18, 34, 0.92));
+        box-shadow: 0 22px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      .title-logo {
+        width: min(320px, 72vw);
+        height: auto;
+        display: block;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+        overflow-wrap: anywhere;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        max-width: 720px;
+      }
+
+      .quick-rules {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .rule-chip {
+        min-height: 72px;
+        padding: 12px;
+        border: 1px solid rgba(216, 148, 25, 0.36);
+        border-radius: 10px;
+        background: rgba(216, 148, 25, 0.1);
+      }
+
+      .rule-chip strong {
+        display: block;
+        margin-bottom: 3px;
+        color: #ffd479;
+        font-size: 14px;
+      }
+
+      .rule-chip span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .section {
+        margin-top: 28px;
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--panel);
+      }
+
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .section h2 {
+        font-size: 22px;
+      }
+
+      .section-note {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .steps {
+        display: grid;
+        gap: 18px;
+      }
+
+      .step {
+        display: grid;
+        grid-template-columns: minmax(0, 0.92fr) minmax(280px, 0.78fr);
+        gap: 18px;
+        align-items: stretch;
+        padding: 16px;
+        border: 1px solid rgba(177, 206, 255, 0.16);
+        border-radius: 12px;
+        background: rgba(7, 16, 31, 0.5);
+      }
+
+      .step-copy {
+        display: grid;
+        align-content: start;
+        gap: 10px;
+      }
+
+      .step-kicker {
+        color: var(--mint);
+        font-size: 13px;
+      }
+
+      .step h3 {
+        font-size: 18px;
+      }
+
+      .step p,
+      .step li {
+        color: #dce7f8;
+        font-size: 14px;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .shot {
+        min-height: 360px;
+        border: 2px dashed rgba(255, 212, 121, 0.48);
+        border-radius: 12px;
+        background:
+          linear-gradient(180deg, rgba(241, 223, 191, 0.08), rgba(241, 223, 191, 0.03)),
+          rgba(3, 8, 18, 0.8);
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+
+      .shot-inner {
+        width: calc(100% - 28px);
+        min-height: 320px;
+        display: grid;
+        place-items: center;
+        padding: 22px;
+        border-radius: 10px;
+        background:
+          linear-gradient(180deg, rgba(18, 38, 72, 0.76), rgba(8, 17, 34, 0.9));
+        text-align: center;
+      }
+
+      .shot-code {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 116px;
+        min-height: 34px;
+        margin-bottom: 12px;
+        border-radius: 999px;
+        background: rgba(36, 214, 181, 0.16);
+        color: #83ffe7;
+        font-size: 13px;
+      }
+
+      .shot-title {
+        color: #fff2bd;
+        font-size: 18px;
+      }
+
+      .shot-desc {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .shot-file {
+        margin-top: 14px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.06);
+        color: #d8e8ff;
+        font-size: 12px;
+        word-break: break-all;
+      }
+
+      .rules-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .rule-card {
+        padding: 16px;
+        border: 1px solid rgba(177, 206, 255, 0.16);
+        border-radius: 12px;
+        background: rgba(7, 16, 31, 0.48);
+      }
+
+      .rule-card h3 {
+        margin-bottom: 8px;
+        color: #ffd479;
+      }
+
+      .replace-guide {
+        background: rgba(36, 214, 181, 0.08);
+        border-color: rgba(36, 214, 181, 0.22);
+      }
+
+      code {
+        padding: 2px 5px;
+        border-radius: 5px;
+        background: rgba(0, 0, 0, 0.28);
+        color: #c7f7ff;
+        overflow-wrap: anywhere;
+      }
+
+      @media (max-width: 820px) {
+        main {
+          width: calc(100% - 18px);
+          max-width: 560px;
+          padding: 18px 0 38px;
+        }
+
+      .hero,
+        .section {
+          padding: 16px;
+          overflow: hidden;
+        }
+
+        .quick-rules,
+        .rules-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .step {
+          grid-template-columns: 1fr;
+          padding: 14px;
+        }
+
+        .shot {
+          min-height: 300px;
+        }
+
+        .shot-inner {
+          min-height: 260px;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .quick-rules,
+        .rules-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .section-head {
+          align-items: start;
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <img class="title-logo" src="img/TITLE_1.png" alt="워드울프" />
+        <h1>V1 플레이 설명서</h1>
+        <p class="subtitle">
+          친구들과 같은 방에 입장해 서로의 힌트와 채팅을 보고 워드울프를 찾아내는 실시간 파티 게임입니다.
+          아래 스크린샷 영역은 임시 플레이스홀더입니다.
+        </p>
+        <div class="quick-rules">
+          <div class="rule-chip">
+            <strong>최대 인원</strong>
+            <span>방당 최대 8명</span>
+          </div>
+          <div class="rule-chip">
+            <strong>아이디</strong>
+            <span>최대 12글자</span>
+          </div>
+          <div class="rule-chip">
+            <strong>힌트</strong>
+            <span>각자 30초</span>
+          </div>
+          <div class="rule-chip">
+            <strong>채팅</strong>
+            <span>180초 토론</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section replace-guide">
+        <div class="section-head">
+          <h2>스크린샷 교체 가이드</h2>
+          <p class="section-note">나중에 받은 이미지를 아래 코드에 맞춰 교체하면 됩니다.</p>
+        </div>
+        <p>
+          각 이미지 자리에는 <code>data-shot</code> 값이 있습니다. 예를 들어
+          <code>SHOT-01</code> 스크린샷을 받으면 해당 영역을
+          <code>&lt;img src="guide-assets/shot-01-profile.png" alt="프로필 설정 화면" /&gt;</code>
+          형태로 교체하면 됩니다.
+        </p>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>게임 준비</h2>
+          <p class="section-note">입장부터 방 생성까지</p>
+        </div>
+        <div class="steps">
+          <article class="step">
+            <div class="step-copy">
+              <span class="step-kicker">STEP 01</span>
+              <h3>아이디와 아이콘 선택</h3>
+              <p>처음 접속하면 아이디와 아이콘을 선택합니다. 아이디는 최대 12글자까지 입력할 수 있습니다.</p>
+              <ul>
+                <li>원하는 아이디를 입력합니다.</li>
+                <li>사용할 아이콘을 선택합니다.</li>
+                <li>입장하기 버튼을 누르면 대기실로 이동합니다.</li>
+              </ul>
+            </div>
+            <figure class="shot" data-shot="SHOT-01">
+              <div class="shot-inner">
+                <div>
+                  <span class="shot-code">SHOT-01</span>
+                  <p class="shot-title">프로필 설정 화면</p>
+                  <p class="shot-desc">아이디 입력창과 아이콘 선택 영역이 보이는 스크린샷</p>
+                  <p class="shot-file">권장 파일명: guide-assets/shot-01-profile.png</p>
+                </div>
+              </div>
+            </figure>
+          </article>
+
+          <article class="step">
+            <div class="step-copy">
+              <span class="step-kicker">STEP 02</span>
+              <h3>방 선택 또는 방 만들기</h3>
+              <p>대기실에서는 생성된 방 목록을 확인하거나 새 방을 만들 수 있습니다.</p>
+              <ul>
+                <li>방 목록에서 원하는 방을 눌러 입장합니다.</li>
+                <li>방 제목을 입력하고 생성 버튼을 누르면 새 방이 만들어집니다.</li>
+                <li>방은 최대 8명까지 입장할 수 있습니다.</li>
+              </ul>
+            </div>
+            <figure class="shot" data-shot="SHOT-02">
+              <div class="shot-inner">
+                <div>
+                  <span class="shot-code">SHOT-02</span>
+                  <p class="shot-title">대기실 방 목록 화면</p>
+                  <p class="shot-desc">생성된 방, 방 만들기, 코드 입장 영역이 보이는 스크린샷</p>
+                  <p class="shot-file">권장 파일명: guide-assets/shot-02-lobby.png</p>
+                </div>
+              </div>
+            </figure>
+          </article>
+
+          <article class="step">
+            <div class="step-copy">
+              <span class="step-kicker">STEP 03</span>
+              <h3>비밀방과 카테고리 숨김</h3>
+              <p>방을 만들 때 공개 여부와 카테고리 표시 여부를 선택할 수 있습니다.</p>
+              <ul>
+                <li>비밀방을 켜면 방 목록에 노출되지 않고 코드로만 입장할 수 있습니다.</li>
+                <li>카테고리 숨김을 켜면 게임 중 단어 카테고리가 공개되지 않습니다.</li>
+              </ul>
+            </div>
+            <figure class="shot" data-shot="SHOT-03">
+              <div class="shot-inner">
+                <div>
+                  <span class="shot-code">SHOT-03</span>
+                  <p class="shot-title">방 만들기 옵션 화면</p>
+                  <p class="shot-desc">비밀방, 카테고리 숨김 체크박스가 보이는 스크린샷</p>
+                  <p class="shot-file">권장 파일명: guide-assets/shot-03-create-room.png</p>
+                </div>
+              </div>
+            </figure>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>라운드 진행</h2>
+          <p class="section-note">단어 확인부터 투표까지</p>
+        </div>
+        <div class="steps">
+          <article class="step">
+            <div class="step-copy">
+              <span class="step-kicker">STEP 04</span>
+              <h3>게임 시작 전 대기</h3>
+              <p>방장이 게임을 시작하면 모든 플레이어에게 비밀 단어가 배정됩니다.</p>
+              <ul>
+                <li>혼자 테스트할 때는 AI를 추가할 수 있습니다.</li>
+                <li>친구들과 할 때는 방 코드를 공유하면 됩니다.</li>
+              </ul>
+            </div>
+            <figure class="shot" data-shot="SHOT-04">
+              <div class="shot-inner">
+                <div>
+                  <span class="shot-code">SHOT-04</span>
+                  <p class="shot-title">방 내부 대기 화면</p>
+                  <p class="shot-desc">플레이어 목록, 방 코드, 게임 시작 버튼이 보이는 스크린샷</p>
+                  <p class="shot-file">권장 파일명: guide-assets/shot-04-room-wait.png</p>
+                </div>
+              </div>
+            </figure>
+          </article>
+
+          <article class="step">
+            <div class="step-copy">
+              <span class="step-kicker">STEP 05</span>
+              <h3>단어 확인</h3>
+              <p>게임이 시작되면 각자 자신의 단어를 확인합니다. 시민은 같은 단어를 받고, 워드울프는 다른 단어를 받습니다.</p>
+              <ul>
+                <li>단어 확인 시간은 10초입니다.</li>
+                <li>자신의 단어를 바로 말하면 안 됩니다.</li>
+              </ul>
+            </div>
+            <figure class="shot" data-shot="SHOT-05">
+              <div class="shot-inner">
+                <div>
+                  <span class="shot-code">SHOT-05</span>
+                  <p class="shot-title">단어 확인 화면</p>
+                  <p class="shot-desc">내 단어 카드와 제한 시간이 보이는 스크린샷</p>
+                  <p class="shot-file">권장 파일명: guide-assets/shot-05-word-reveal.png</p>
+                </div>
+              </div>
+            </figure>
+          </article>
+
+          <article class="step">
+            <div class="step-copy">
+              <span class="step-kicker">STEP 06</span>
+              <h3>힌트 라운드</h3>
+              <p>플레이어가 한 명씩 차례대로 힌트를 제출합니다. 힌트는 단어를 직접 말하지 않고 간접적으로 설명해야 합니다.</p>
+              <ul>
+                <li>각 플레이어는 30초 안에 힌트를 제출합니다.</li>
+                <li>내 차례가 되면 입력창이 활성화됩니다.</li>
+                <li>너무 직접적인 힌트는 워드울프에게 정답을 알려줄 수 있습니다.</li>
+              </ul>
+            </div>
+            <figure class="shot" data-shot="SHOT-06">
+              <div class="shot-inner">
+                <div>
+                  <span class="shot-code">SHOT-06</span>
+                  <p class="shot-title">힌트 제출 화면</p>
+                  <p class="shot-desc">힌트 목록, 내 차례 표시, 힌트 입력창이 보이는 스크린샷</p>
+                  <p class="shot-file">권장 파일명: guide-assets/shot-06-hint.png</p>
+                </div>
+              </div>
+            </figure>
+          </article>
+
+          <article class="step">
+            <div class="step-copy">
+              <span class="step-kicker">STEP 07</span>
+              <h3>채팅 토론</h3>
+              <p>모든 힌트가 제출되면 채팅으로 자유롭게 토론합니다. 힌트와 발언을 보고 누가 워드울프인지 추리합니다.</p>
+              <ul>
+                <li>채팅 시간은 180초입니다.</li>
+                <li>수상한 힌트나 말실수를 중심으로 이야기하면 좋습니다.</li>
+              </ul>
+            </div>
+            <figure class="shot" data-shot="SHOT-07">
+              <div class="shot-inner">
+                <div>
+                  <span class="shot-code">SHOT-07</span>
+                  <p class="shot-title">채팅 토론 화면</p>
+                  <p class="shot-desc">채팅창과 남은 시간이 보이는 스크린샷</p>
+                  <p class="shot-file">권장 파일명: guide-assets/shot-07-chat.png</p>
+                </div>
+              </div>
+            </figure>
+          </article>
+
+          <article class="step">
+            <div class="step-copy">
+              <span class="step-kicker">STEP 08</span>
+              <h3>투표</h3>
+              <p>토론이 끝나면 워드울프라고 생각하는 사람에게 투표합니다.</p>
+              <ul>
+                <li>투표 시간은 30초입니다.</li>
+                <li>모두 투표하거나 시간이 지나면 결과가 진행됩니다.</li>
+                <li>방장은 힌트 또는 채팅 중 즉시 투표를 시작할 수 있습니다.</li>
+              </ul>
+            </div>
+            <figure class="shot" data-shot="SHOT-08">
+              <div class="shot-inner">
+                <div>
+                  <span class="shot-code">SHOT-08</span>
+                  <p class="shot-title">투표 화면</p>
+                  <p class="shot-desc">투표 버튼 목록과 투표 제한 시간이 보이는 스크린샷</p>
+                  <p class="shot-file">권장 파일명: guide-assets/shot-08-vote.png</p>
+                </div>
+              </div>
+            </figure>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>승패 결정</h2>
+          <p class="section-note">울프 최종 추리와 결과 공개</p>
+        </div>
+        <div class="steps">
+          <article class="step">
+            <div class="step-copy">
+              <span class="step-kicker">STEP 09</span>
+              <h3>울프 최종 추리</h3>
+              <p>투표로 워드울프를 잡은 경우, 워드울프는 시민 단어를 맞힐 마지막 기회를 얻습니다.</p>
+              <ul>
+                <li>울프 최종 추리 시간은 30초입니다.</li>
+                <li>울프가 시민 단어를 맞히면 울프가 역전 승리합니다.</li>
+                <li>울프가 틀리면 시민이 승리합니다.</li>
+              </ul>
+            </div>
+            <figure class="shot" data-shot="SHOT-09">
+              <div class="shot-inner">
+                <div>
+                  <span class="shot-code">SHOT-09</span>
+                  <p class="shot-title">울프 최종 추리 화면</p>
+                  <p class="shot-desc">울프가 시민 단어를 입력하는 화면 또는 다른 시민의 대기 화면</p>
+                  <p class="shot-file">권장 파일명: guide-assets/shot-09-wolf-guess.png</p>
+                </div>
+              </div>
+            </figure>
+          </article>
+
+          <article class="step">
+            <div class="step-copy">
+              <span class="step-kicker">STEP 10</span>
+              <h3>결과 공개</h3>
+              <p>게임이 끝나면 승리 팀, 워드울프, 단어, 투표 결과가 공개됩니다.</p>
+              <ul>
+                <li>워드울프를 잡지 못하면 울프가 승리합니다.</li>
+                <li>동표 등으로 워드울프를 확정하지 못해도 울프가 승리합니다.</li>
+                <li>워드울프를 잡고 최종 추리까지 막으면 시민이 승리합니다.</li>
+              </ul>
+            </div>
+            <figure class="shot" data-shot="SHOT-10">
+              <div class="shot-inner">
+                <div>
+                  <span class="shot-code">SHOT-10</span>
+                  <p class="shot-title">결과 화면</p>
+                  <p class="shot-desc">승리 팀, 워드울프, 투표 결과가 보이는 스크린샷</p>
+                  <p class="shot-file">권장 파일명: guide-assets/shot-10-result.png</p>
+                </div>
+              </div>
+            </figure>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>승리 조건 요약</h2>
+          <p class="section-note">게임 중 헷갈리기 쉬운 부분</p>
+        </div>
+        <div class="rules-grid">
+          <article class="rule-card">
+            <h3>시민 승리</h3>
+            <p>투표로 워드울프를 잡고, 워드울프가 시민 단어 맞히기에 실패하면 시민이 승리합니다.</p>
+          </article>
+          <article class="rule-card">
+            <h3>울프 승리</h3>
+            <p>투표로 워드울프를 잡지 못하거나, 워드울프가 최종 추리에서 시민 단어를 맞히면 울프가 승리합니다.</p>
+          </article>
+          <article class="rule-card">
+            <h3>힌트 팁</h3>
+            <p>좋은 힌트는 단어를 직접 말하지 않으면서도 시민끼리는 연결할 수 있는 표현입니다.</p>
+          </article>
+          <article class="rule-card">
+            <h3>채팅 팁</h3>
+            <p>힌트의 방향, 말투, 단어에 대한 반응을 비교하면 워드울프를 찾기 쉬워집니다.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
