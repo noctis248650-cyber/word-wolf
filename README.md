@@ -58,7 +58,7 @@ The app can run lobby AI players through Supabase Edge Functions and OpenAI.
 2. Add `SUPABASE_ACCESS_TOKEN` in GitHub repository secrets.
 3. Push changes or run `Deploy Supabase Functions` manually in GitHub Actions.
 
-The browser never receives the OpenAI key. It calls the `ai-bot-turn` Edge Function, and the function uses `gpt-4.1-mini` to generate AI hints, votes, and wolf guesses.
+The browser never receives the OpenAI key. It calls the `ai-bot-turn` Edge Function, and the function uses the `OPENAI_MODEL` Edge Function environment variable, falling back to `gpt-4.1`, to generate AI hints, votes, chat replies, and wolf guesses.
 
 ## Local Run
 
