@@ -4,13 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>워드울프</title>
-    <link rel="stylesheet" href="styles.css?v=20260609-v1-title-regular" />
+    <link rel="stylesheet" href="styles.css?v=20260609-v1-room-rules-audio" />
   </head>
   <body class="v1">
     <main class="shell">
       <section class="mast">
         <div>
-          <p class="eyebrow">Social deduction party game</p>
           <h1 class="title-mark">
             <img class="title-logo" src="img/TITLE_1.png" alt="워드울프" />
           </h1>
@@ -38,7 +37,7 @@
           <div class="entry-grid">
             <div class="field">
               <label for="playerName">아이디</label>
-              <input id="playerName" maxlength="16" placeholder="예: Hyuk" autocomplete="nickname" />
+              <input id="playerName" maxlength="12" placeholder="예: Hyuk" autocomplete="nickname" />
             </div>
             <div class="field avatar-field">
               <span class="field-label">아이콘</span>
@@ -68,7 +67,6 @@
             </div>
             <div class="create-room-grid">
               <input id="roomTitle" maxlength="24" placeholder="방 제목" />
-              <input id="maxPlayers" type="number" min="3" max="10" value="8" aria-label="최대 인원" />
               <label class="secret-room-toggle" for="privateRoom">
                 <input id="privateRoom" type="checkbox" />
                 <span>비밀방</span>
@@ -149,6 +147,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="app.js?v=20260605-hide-category" type="module"></script>
+    <script src="app.js?v=20260609-v1-room-rules-audio" type="module"></script>
   </body>
 </html>

@@ -5,7 +5,6 @@ const lobbyStep = document.querySelector("#lobbyStep");
 const playerNameInput = document.querySelector("#playerName");
 const roomCodeInput = document.querySelector("#roomCode");
 const roomTitleInput = document.querySelector("#roomTitle");
-const maxPlayersInput = document.querySelector("#maxPlayers");
 const privateRoomInput = document.querySelector("#privateRoom");
 const hideCategoryInput = document.querySelector("#hideCategory");
 const avatarChoices = document.querySelector("#avatarChoices");
@@ -78,6 +77,7 @@ const hasSupabaseConfig =
   !config.anonKey.includes("YOUR_SUPABASE");
 
 const db = hasSupabaseConfig ? window.supabase.createClient(config.url, config.anonKey) : null;
+const PLAYER_NAME_MAX_LENGTH = 12;
 
 function clampVolume(value) {
   if (!Number.isFinite(value)) return 0.18;
@@ -143,7 +143,7 @@ let state = {
   seenMessageSoundIds: new Set()
 };
 
-playerNameInput.value = localStorage.getItem("wordWolfPlayerName") || "";
+playerNameInput.value = (localStorage.getItem("wordWolfPlayerName") || "").slice(0, PLAYER_NAME_MAX_LENGTH);
 
 function updateSoundToggle() {
   if (!soundToggleBtn) return;
@@ -183,9 +183,8 @@ function playNextBgm() {
 }
 
 function unlockAudio() {
-  if (state.audioUnlocked) return;
   state.audioUnlocked = true;
-  if (state.soundEnabled) playNextBgm();
+  if (state.soundEnabled && audioPlayers.bgm.paused) playNextBgm();
 }
 
 function playSfx(name) {
@@ -498,11 +497,12 @@ function scheduleAiChatReply() {
 }
 
 function requireName() {
-  const name = playerNameInput.value.trim();
+  const name = playerNameInput.value.trim().slice(0, PLAYER_NAME_MAX_LENGTH);
   if (!name) {
     playerNameInput.focus();
     throw new Error("아이디를 먼저 입력해주세요.");
   }
+  playerNameInput.value = name;
   localStorage.setItem("wordWolfPlayerName", name);
   return name;
 }
@@ -514,15 +514,6 @@ function requireRoomTitle() {
     throw new Error("방 제목을 입력해주세요.");
   }
   return title;
-}
-
-function requireMaxPlayers() {
-  const maxPlayers = Number(maxPlayersInput.value);
-  if (!Number.isInteger(maxPlayers) || maxPlayers < 3 || maxPlayers > 10) {
-    maxPlayersInput.focus();
-    throw new Error("최대 인원은 3명에서 10명 사이로 설정해주세요.");
-  }
-  return maxPlayers;
 }
 
 function saveSession(room, playerId) {
@@ -1202,8 +1193,10 @@ function render() {
 updateSoundToggle();
 updateBgmVolumeControl();
 
-document.addEventListener("pointerdown", unlockAudio, { once: true });
-document.addEventListener("keydown", unlockAudio, { once: true });
+document.addEventListener("pointerdown", unlockAudio);
+document.addEventListener("click", unlockAudio);
+document.addEventListener("touchstart", unlockAudio, { passive: true });
+document.addEventListener("keydown", unlockAudio);
 document.addEventListener(
   "click",
   (event) => {
@@ -1258,7 +1251,7 @@ createRoomBtn.addEventListener("click", () =>
       p_name: requireName(),
       p_avatar: state.selectedAvatar,
       p_title: requireRoomTitle(),
-      p_max_players: requireMaxPlayers(),
+      p_max_players: 8,
       p_is_private: privateRoomInput.checked,
       p_hide_category: hideCategoryInput.checked
     });
