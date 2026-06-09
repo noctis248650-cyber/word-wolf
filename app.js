@@ -844,7 +844,7 @@ function renderSecret() {
     secretWord.textContent = isWolfWin ? wolfNames || "울프" : "시민 승리";
     categoryText.textContent = `내 역할: ${role} · 시민 단어: ${result.words?.villager || "-"} · 울프 단어: ${
       result.words?.wolf || "-"
-    }`;
+    } · 울프 입력: ${result.guess || "-"}`;
     return;
   }
 
@@ -1137,8 +1137,9 @@ function renderResultActions() {
     })
     .join("\n");
   const voteText = voteLines ? `\n\n투표 결과\n${voteLines}` : "";
+  const guessText = result.guess ? `\n울프 입력: ${result.guess}` : "";
 
-  setMessage(`${winnerText}\n${reasonText}\n지목된 사람: ${eliminatedName}\n워드울프: ${wolfNames || "없음"}${voteText}`);
+  setMessage(`${winnerText}\n${reasonText}\n지목된 사람: ${eliminatedName}\n워드울프: ${wolfNames || "없음"}${guessText}${voteText}`);
 
   if (isHost()) {
     addButton("다음 판 준비", "primary", () =>
